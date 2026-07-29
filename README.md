@@ -1,6 +1,27 @@
 # MAMA Scheduler
 
-AI-powered family scheduling. Two artifacts live in this repo:
+AI-powered family scheduling. **Three artifacts** live in this single repo by design:
+
+| Artifact | What it is |
+|---|---|
+| `web_demo.html` | The shipped product — single-file bilingual (EN / 繁體中文) family scheduler. ~2,700 lines, zero dependencies, all state in `localStorage`. Testers run it on Netlify. |
+| `app/` | Kotlin / Compose / Hilt / Room Android rewrite (`com.mama.scheduler`). Compiles on the original developer's machine; first-time contributors may hit toolchain bumps. |
+| `cors_proxy_worker.js` | Cloudflare Worker that serves as both an AI gateway (`/gemini`) and CORS relays (`/minimax`, `/minimax-cn`, `/deepseek`, `/openai`). |
+
+The split lets testers iterate on the same code on the web without rebuilding Android, while the Android app catches up feature-by-feature.
+
+> Read `HANDOFF.md` for full project state, architecture, feedback backlog, and team workflow.
+> Read `CLAUDE.md` for the rules to follow when editing either artifact.
+
+---
+
+## ⚠️ Before you push or hand this off
+
+1. **Rotate the Gemini API key** — the local `.env` (gitignored) contains a real key that, until rotated, will be embedded in every Android APK built with it. Visit https://aistudio.google.com/ to regenerate.
+2. **`git clean -fdx`** to wipe orphan build outputs (`app/build/`, `build/`, `.kotlin/`) that contradict the "Android compiles" notes.
+3. **Android UI is English-only at handoff** — see "Known limitations / post-handoff TODOs" below. The web demo is fully bilingual.
+
+---
 
 | Artifact | Status | What it is |
 |---|---|---|
@@ -126,19 +147,19 @@ com.mama.scheduler/
 
 **Build**
 
-Prerequisites: Java 21, Android SDK (API 36), `gradle-wrapper` (vendored).
+Prerequisites: JDK 21 (matches `app/build.gradle.kts` toolchain), Android SDK with platform-36 installed, `gradle-wrapper` (vendored — no separate Gradle install needed).
 
 ```bash
 # 1. Drop your Gemini key into .env (template: .env.example)
 cp .env.example .env
 # edit .env and set GEMINI_API_KEY=...
 
-# 2. Build
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21
-export ANDROID_HOME=$HOME/Android/sdk
+# 2. Build (point JAVA_HOME at your JDK 21 install and ANDROID_HOME at your SDK root)
+export JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || echo /path/to/jdk-21)"
+export ANDROID_HOME="$HOME/Library/Android/sdk"   # macOS default; adjust per OS
 ./gradlew assembleDebug
 
-# 3. Install (emulator must be running, e.g. mama_test_x86 on M-series Mac)
+# 3. Install (connect a device or start an emulator first)
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -166,6 +187,18 @@ Installs as a separate app (`com.mama.scheduler`), so any previous MAMA install 
 - Workflow: testers screenshot issues → fix in `web_demo.html` → `cp web_demo.html deploy/index.html` → drag `deploy/` onto netlify.com/drop
 - Live demo URL is configured by Joshua at deploy time
 
+## Known limitations / post-handoff TODOs
+
+These are real but deliberately deferred for the public handoff:
+
+- **Android UI is English-only.** The web demo is fully bilingual (EN / 繁體中文) and CLAUDE.md says the Android app should match. No `values-zh-rTW/strings.xml` exists; every Android screen string is hardcoded English inline. Add a Chinese resources directory and externalize `R.string.*` calls when starting.
+- **No unit tests yet in `app/src/test/`.** Conflict detection and recurrence-expansion logic live in `app/src/main/java/com/mama/scheduler/domain/` and have no test coverage. The web demo has a Node-based regression harness (`node --check /tmp/demo.js`) but the Android equivalent does not.
+- **`WeatherService` not wired through `.env`.** `app/src/main/java/com/mama/scheduler/domain/WeatherService.kt:19` hardcodes `OPENWEATHERMAP_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"` instead of reading from BuildConfig like Gemini does.
+- **`RECEIVE_BOOT_COMPLETED` permission declared but no receiver.** `AndroidManifest.xml` requests the permission but no `<receiver>` for `BOOT_COMPLETED` exists, so reminders do not survive reboot yet. Either drop the permission or add the receiver.
+- **Multi-parent / helper sync not implemented.** Top team ask. Requires a backend (Firebase or Google Calendar as source of truth). Helpers would be read-only with no AI features.
+- **Port demo features into Android.** The web demo has: multi-select participants, `[Name]` titles, locations with tap-to-Maps/Uber/DiDi, recently-deleted bin with edit & restore, undo, memories reel, photo upload, etc. The Android app catches these up incrementally.
+- **XSS landmine in `web_demo.html`.** Inline `onclick` interpolates raw state into handler strings (`setAgFilter(${k.id})` etc., lines ~1469/1486/1521/1704/1853). Safe today because no user-controlled data flows in; brittle forever. Treat as "do not add new features that follow this pattern."
+
 ## License
 
-TBD — to be set when handed off.
+MIT — see [LICENSE](./LICENSE). Copyright (c) 2026 Joshua.

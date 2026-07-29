@@ -6,6 +6,10 @@ plugins {
   alias(libs.plugins.secrets)
 }
 
+kotlin {
+  jvmToolchain(21)
+}
+
 android {
   namespace = "com.mama.scheduler"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -39,8 +43,8 @@ android {
     }
   }
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
   }
   buildFeatures {
     compose = true

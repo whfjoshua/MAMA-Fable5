@@ -1,4 +1,7 @@
 *.iml
+*.log
+*.bak
+*~
 .gradle
 /local.properties
 /.idea

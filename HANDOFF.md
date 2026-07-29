@@ -5,7 +5,7 @@ AI-powered family scheduler. Two artifacts live in this repo:
 1. **`web_demo.html`** — single-file interactive demo (the thing the team is testing on Netlify). This is where all product iteration has happened. ~2,700 lines, zero dependencies, all state in `localStorage`.
 2. **Android app** (`app/`) — full Kotlin rewrite (Material You + clean architecture), compiles independently. Feature-behind the demo; needs catch-up (see Backlog).
 
-Supporting files: `cors_proxy_worker.js` (Cloudflare Worker: AI gateway + CORS relay), `deploy/index.html` (exact copy of web_demo.html for Netlify Drop), `README.md` (Android build instructions), `APP_SUMMARY.md` in `../mama_app_aistudio` (legacy app reference).
+Supporting files: `cors_proxy_worker.js` (Cloudflare Worker: AI gateway + CORS relay), `deploy/index.html` (exact copy of web_demo.html for Netlify Drop), `LICENSE` (MIT), `README.md` (build instructions and known limitations). The legacy `aistudio`-era build is not part of this repo and is not required for handoff.
 
 ---
 
@@ -75,6 +75,6 @@ Monthly achievements per kid (progress: "Leo: 4 swim lessons, learned breaststro
 6. Gemini structured output (`responseSchema`), Credential Manager migration, unit tests for `ConflictDetector`/`RecurrenceExpander`
 
 ## Android app quick facts
-Package `com.mama.scheduler` · Kotlin 2.2 / AGP 9.1.1 / Gradle 9.3.1 / Java 21 · Compose BOM 2024.09 + Material You dynamic color · Hilt 2.59.2 (AGP9-compatible) · Room 2.7 (`mama_scheduler_db` v1, no migration from legacy app) · DataStore · WorkManager · Gemini via Retrofit/Moshi (`gemini-3.5-flash`) · Google Sign-In (legacy API) + Calendar API sync · `.env` holds `GEMINI_API_KEY` via secrets-gradle-plugin.
-Build: `export JAVA_HOME=/opt/homebrew/opt/openjdk@21 ANDROID_HOME=~/Android/sdk && ./gradlew assembleDebug` — **never compiled yet; expect first-build fixes.**
+Package `com.mama.scheduler` · Kotlin 2.2 / AGP 9.1.1 / Gradle 9.3.1 / Java 21 toolchain (matches docs; bump to 21 from VERSION_11 in `app/build.gradle.kts` is on the post-handoff list) · Compose BOM 2024.09 + Material You dynamic color · Hilt 2.59.2 (AGP9-compatible) · Room 2.7 (`mama_scheduler_db` v1, no migration from legacy app) · DataStore · WorkManager · Gemini via Retrofit/Moshi (`gemini-3.5-flash`) · Google Sign-In (legacy API) + Calendar API sync · `.env` holds `GEMINI_API_KEY` via secrets-gradle-plugin.
+Build: `export JAVA_HOME=<your-jdk-21> ANDROID_HOME=<your-sdk> && ./gradlew assembleDebug` — compiled on the original developer's machine. First-time contributors on a fresh laptop may hit toolchain/SDK version bumps; expect a handful of dependency-resolution fixes.
 Layers: `data/{local,remote,prefs,repository}` → `domain/` (NaturalLanguageParser, SchedulerAgent, ConflictDetector, RecurrenceExpander, PhotoFinder, WeatherService) → `ui/screens/{agenda,calendar,approvals,chat,profiles}` each with Hilt ViewModel; `MamaApp.kt` bottom-nav host; `sync/`, `notifications/`, `auth/GoogleAuthManager`.

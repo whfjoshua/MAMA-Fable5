@@ -2,10 +2,11 @@
 
 **Read `HANDOFF.md` first** — full project state, architecture, feedback backlog, and team workflow.
 
-## The two artifacts
+## The three artifacts
 
 - `web_demo.html` — the live product being iterated with testers (single-file, no framework, bilingual EN/繁中). This is where feature work happens.
-- `app/` — Android rewrite (Kotlin, Compose, Hilt, Room). Never compiled yet; feature-behind the demo.
+- `app/` — Android rewrite (Kotlin, Compose, Hilt, Room) packaged as `com.mama.scheduler` (versionName `2.0`, versionCode `1`). Compiles on the original developer's machine; feature-behind the demo. Coexists on-device with legacy `com.mama.mama` (separate package, no shared data).
+- `cors_proxy_worker.js` — Cloudflare Worker serving as MAMA Cloud AI gateway (`/gemini`) and CORS relay for `/minimax`, `/minimax-cn`, `/deepseek`, `/openai`.
 
 ## Rules for the web demo
 
@@ -31,5 +32,8 @@
 ## Current top priorities
 
 1. Fill `MAMA_GATEWAY` in `web_demo.html` + deploy `cors_proxy_worker.js` (testers' key-free Google login — see HANDOFF.md §MAMA Cloud)
-2. First successful `./gradlew assembleDebug` of the Android app
-3. Multi-parent sync design (the #1 team ask)
+2. Reconcile Android toolchain: docs say Java 21, `app/build.gradle.kts` currently sets `sourceCompatibility = VERSION_11`. Bump the build to 21 to match (post-handoff item).
+3. Android UI is English-only at handoff; port the demo's `I18N` table to `values-zh-rTW/strings.xml` and externalize every hardcoded `Text(...)` to `stringResource(R.string.*)`.
+4. Multi-parent sync design (the #1 team ask — blocked on choosing a backend).
+
+See `README.md` §"Known limitations / post-handoff TODOs" for the full list.

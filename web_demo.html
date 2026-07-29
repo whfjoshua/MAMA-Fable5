@@ -693,7 +693,7 @@ const I18N = {
   mamaDesc: ["Tap Sign in with Google and you're done — Gemini runs through our family gateway. No API key, no Google Cloud setup.","撳一下 Google 登入就得 — Gemini 經我哋嘅家庭 gateway 運行。唔使 API key，唔使搞 Google Cloud。"],
   gatewayL: ["Gateway URL (Cloudflare Worker)","Gateway 網址（Cloudflare Worker）"],
   signedInAs: ["Signed in as","已登入："],
-  mamaNotSetup: ["Gateway not configured yet — Joshua needs to fill in MAMA_GATEWAY at the top of this file (see cors_proxy_worker.js).","Gateway 未設定 — 要 Joshua 先喺檔案頂部填好 MAMA_GATEWAY（睇 cors_proxy_worker.js）。"],
+  mamaNotSetup: ["MAMA Cloud not configured — fill MAMA_GATEWAY at the top of this file (see cors_proxy_worker.js).","MAMA 雲端未設定 — 喺檔案頂部填好 MAMA_GATEWAY（睇 cors_proxy_worker.js）。"],
   signInFirst: ["Sign in with Google first (Family tab)","請先用 Google 登入（家庭分頁）"],
   all: ["All","全部"], mine: ["Mine","我的"],
   notesL: ["Notes (what to bring, etc.)","備註（要帶啲乜等）"],
@@ -2329,8 +2329,8 @@ function renderFamily() {
       <div class="section-title">🔄 ${t("syncTitle")}</div>
       <div class="sub" style="font-size:11.5px;color:var(--muted);margin-bottom:6px">${t("accounts")}:</div>
       <div class="chip-row" style="margin-bottom:10px">
-        <span class="chip small selected">agnes@gmail.com</span>
-        <span class="chip small selected">papa.wong@gmail.com</span>
+        <span class="chip small selected">&lt;tester-a&gt;@example.com</span>
+        <span class="chip small selected">&lt;tester-b&gt;@example.com</span>
         <span class="chip small" onclick="toast(lang()==='zh'?'模擬：正式app可以連結多個Google帳戶':'Simulated: the real app links multiple Google accounts')">${t("addAccount")}</span>
       </div>
       <button class="btn btn-filled btn-block" onclick="toast('Simulated: 2 exported, 1 imported from Google Calendar ✓')">${t("syncGoogle")}</button>

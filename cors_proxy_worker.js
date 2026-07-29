@@ -12,7 +12,8 @@
  *  1. https://workers.cloudflare.com → Create Worker → paste this file → Deploy
  *  2. Worker → Settings → Variables and Secrets, add:
  *       GEMINI_API_KEY   (secret)  = your Gemini key from aistudio.google.com
- *       ALLOWED_EMAILS   (text)    = whfjoshua3@gmail.com,ocean@...,agnes@...
+ *       ALLOWED_EMAILS   (text)    = your-email@example.com,partner@example.com
+ *                                    // Replace with your comma-separated allowlist
  *       GOOGLE_CLIENT_ID (text)    = optional but recommended: your OAuth Web
  *                                    Client ID, to reject tokens minted for other apps
  *       GEMINI_MODEL     (text)    = optional default model, e.g. gemini-3.5-flash
@@ -83,7 +84,7 @@ export default {
       if (env.ALLOWED_EMAILS) {
         const allowed = env.ALLOWED_EMAILS.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
         if (!allowed.includes((info.email || "").toLowerCase())) {
-          return json(403, { error: `${info.email} is not on the family allowlist — ask Joshua to add you` });
+          return json(403, { error: `${info.email} is not on the family allowlist — contact the project owner to add you` });
         }
       }
 
