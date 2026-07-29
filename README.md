@@ -168,4 +168,4 @@ Installs as a separate app (`com.mama.scheduler`), so any previous MAMA install 
 
 ## License
 
-Private — all rights reserved.
+TBD — to be set when handed off.
