@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FAF5F2">
+<title>MAMA — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --ink: #1E2447;
+    --muted: #767C9C;
+    --faint: #A9AEC8;
+    --bg: #FAF5F2;
+    --surface: #FFFFFF;
+    --surface-soft: #FBF8F6;
+    --primary: #3A47AC;
+    --primary-deep: #2E3A8C;
+    --primary-soft: #E9EBF8;
+    --grad: linear-gradient(150deg, #4757BE 0%, #33409E 55%, #2B3790 100%);
+    --hero-grad: linear-gradient(150deg, #4051B5 0%, #33409E 60%, #2B3790 100%);
+    --peach: #F0A17E;
+    --peach-soft: #FCE9DB;
+    --mint: #4CAF8B;
+    --mint-soft: #E2F3EA;
+    --rose: #D96D8B;
+    --rose-soft: #FBE7EC;
+    --gold-soft: #FFF6E0;
+    --border: #F1E9E6;
+    --shadow-sm: 0 2px 10px rgba(30,36,71,0.06);
+    --shadow-md: 0 8px 24px rgba(30,36,71,0.10);
+    --shadow-lg: 0 18px 40px rgba(46,58,140,0.30);
+    /* legacy aliases kept for inline styles */
+    --background: #FAF5F2;
+    --on-surface: #1E2447;
+    --on-surface-variant: #767C9C;
+    --surface-variant: #F3EDEA;
+    --outline: #DBD5DC;
+    --primary-container: #E9EBF8;
+    --on-primary-container: #2E3A8C;
+    --secondary-container: #E9EBF8;
+    --tertiary-container: #FCE9DB;
+    --on-tertiary-container: #9A5B36;
+    --error-container: #FBE7EC;
+    --on-error-container: #A5405E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 800px at 15% -10%, #E4E7F8 0%, rgba(228,231,248,0) 55%),
+                radial-gradient(1000px 700px at 110% 15%, #F8DFDA 0%, rgba(248,223,218,0) 50%),
+                #F6EEEA;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; padding: 28px 12px; color: var(--ink);
+  }
+  .demo-note {
+    max-width: 430px; text-align: center; margin-bottom: 18px;
+    color: var(--muted); font-size: 13px; line-height: 1.6; font-weight: 500;
+  }
+  .demo-note b {
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 800; letter-spacing: -0.01em;
+  }
+  .phone {
+    width: 402px; max-width: 100%; height: 800px; max-height: 92vh;
+    background: var(--bg); border-radius: 44px;
+    box-shadow: 0 40px 90px rgba(30,36,71,0.30), 0 0 0 12px #161B3C, 0 0 0 13px #2B3474;
+    overflow: hidden; display: flex; flex-direction: column; position: relative;
+  }
+  .screen { flex: 1; overflow-y: auto; padding: 26px 20px 16px; scrollbar-width: none; }
+  .screen::-webkit-scrollbar { display: none; }
+
+  h1.title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 2px; }
+  .subtitle { font-size: 13.5px; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .card, .timeline, .hero-card, .welcome-card, .empty { animation: rise .38s cubic-bezier(.2,.7,.3,1) both; }
+
+  /* ---- Floating bottom nav ---- */
+  .navbar {
+    display: flex; gap: 2px; margin: 0 14px 14px; padding: 8px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(14px);
+    border-radius: 26px; box-shadow: var(--shadow-md); border: 1px solid var(--border);
+  }
+  .nav-item {
+    flex: 1; text-align: center; cursor: pointer; font-size: 10.5px; font-weight: 600;
+    color: var(--faint); position: relative; user-select: none; padding: 2px 0;
+    transition: color .2s;
+  }
+  .nav-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 32px; border-radius: 14px; margin-bottom: 2px;
+    transition: background .25s, color .25s, transform .2s;
+  }
+  .nav-icon svg { width: 21px; height: 21px; }
+  .nav-item.active { color: var(--primary-deep); }
+  .nav-item.active .nav-icon { background: var(--primary-soft); color: var(--primary-deep); transform: translateY(-1px); }
+  .nav-item:active .nav-icon { transform: scale(.9); }
+  .nav-badge {
+    position: absolute; top: -2px; right: 50%; margin-right: -22px;
+    background: linear-gradient(135deg,#E98AA1,#D96D8B); color: #fff;
+    border-radius: 10px; font-size: 9.5px; min-width: 17px; height: 17px;
+    line-height: 17px; padding: 0 4px; font-weight: 800; box-shadow: 0 3px 8px rgba(217,109,139,.45);
+    z-index: 2;
+  }
+
+  /* ---- Hero "next up" card ---- */
+  .hero-card {
+    position: relative; overflow: hidden; border-radius: 26px; padding: 20px;
+    background: var(--hero-grad); color: #fff; margin-bottom: 18px;
+    box-shadow: var(--shadow-lg);
+  }
+  .hero-card::after {
+    content: ""; position: absolute; width: 190px; height: 190px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); top: -80px; right: -60px;
+  }
+  .hero-card::before {
+    content: ""; position: absolute; width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(217,109,139,0.55); bottom: -55px; left: -35px;
+  }
+  .hero-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    opacity: .85; margin-bottom: 8px;
+  }
+  .hero-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; position: relative; z-index: 1; }
+  .hero-sub { font-size: 13px; opacity: .92; font-weight: 500; position: relative; z-index: 1; }
+  .hero-chip {
+    display: inline-block; margin-top: 12px; padding: 7px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.22); backdrop-filter: blur(6px);
+    font-size: 12.5px; font-weight: 700; position: relative; z-index: 1;
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    background: var(--surface); border-radius: 24px; padding: 16px;
+    margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+  }
+  .event-card { display: flex; overflow: hidden; padding: 0; transition: transform .15s, box-shadow .2s; }
+  .event-card:active { transform: scale(.985); }
+  .accent-bar { width: 6px; flex-shrink: 0; border-radius: 0 6px 6px 0; }
+  .event-body { padding: 15px 16px; flex: 1; }
+  .event-row { display: flex; align-items: center; gap: 11px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px;
+  }
+  .event-title { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .event-sub { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+  .buffer-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; color: #9A5B36;
+    background: var(--peach-soft); border-radius: 999px; padding: 4px 10px; margin-top: 9px;
+  }
+  .timeline { display: flex; gap: 11px; margin-bottom: 13px; }
+  .time-col { width: 56px; text-align: right; flex-shrink: 0; padding-top: 14px; }
+  .time-start { font-size: 12.5px; font-weight: 800; color: var(--ink); }
+  .time-end { font-size: 11px; color: var(--faint); font-weight: 600; margin-top: 1px; }
+  .card-actions { margin-top: 12px; display: flex; gap: 8px; }
+
+  /* ---- Chips & buttons ---- */
+  .chip {
+    display: inline-block; padding: 8px 15px; border-radius: 999px;
+    border: 1.5px solid var(--border); font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--surface); color: var(--muted); user-select: none; white-space: nowrap;
+    transition: all .18s;
+  }
+  .chip:active { transform: scale(.95); }
+  .chip.selected {
+    background: var(--grad); border-color: transparent; color: #fff; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(46,58,140,.28);
+  }
+  .chip.small { padding: 6px 12px; font-size: 12px; }
+  .btn {
+    border: none; border-radius: 999px; padding: 12px 20px; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: -0.01em;
+    transition: transform .15s, box-shadow .2s, opacity .2s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-filled { background: var(--grad); color: #fff; box-shadow: 0 6px 18px rgba(46,58,140,.30); }
+  .btn-outlined { background: var(--surface); color: var(--primary-deep); border: 1.5px solid var(--outline); }
+  .btn-block { width: 100%; margin-top: 8px; }
+  .btn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+
+  /* ---- Week picker ---- */
+  .week-row { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 16px; padding: 4px 2px 6px; scrollbar-width: none; }
+  .week-row::-webkit-scrollbar { display: none; }
+  .day-pill {
+    min-width: 47px; text-align: center; border-radius: 18px; padding: 10px 4px 8px;
+    background: var(--surface); border: 1px solid var(--border); cursor: pointer; user-select: none;
+    transition: all .22s cubic-bezier(.2,.7,.3,1); box-shadow: var(--shadow-sm);
+  }
+  .day-pill:active { transform: scale(.93); }
+  .day-pill.selected {
+    background: var(--grad); border-color: transparent; transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(46,58,140,.32);
+  }
+  .day-pill .dow { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .day-pill.selected .dow { color: rgba(255,255,255,.8); }
+  .day-pill .dom { font-size: 17px; font-weight: 800; margin-top: 1px; color: var(--ink); }
+  .day-pill.selected .dom { color: #fff; }
+  .day-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--peach); margin: 4px auto 0; }
+  .day-pill.selected .dot { background: #fff; }
+  .day-pill .dot.hidden { visibility: hidden; }
+
+  /* ---- Inputs ---- */
+  .input-row {
+    display: flex; align-items: center; gap: 8px;
+    border: 1.5px solid var(--border); border-radius: 999px;
+    padding: 7px 8px 7px 16px; margin-bottom: 16px; background: var(--surface);
+    box-shadow: var(--shadow-sm); transition: border-color .2s, box-shadow .2s;
+  }
+  .input-row:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(58,71,172,.12); }
+  .input-row input {
+    flex: 1; border: none; outline: none; font-size: 14px; font-family: inherit;
+    background: transparent; color: var(--ink); font-weight: 500;
+  }
+  .input-row input::placeholder { color: var(--faint); }
+  .send-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--grad); color: #fff; font-size: 15px; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(46,58,140,.35); transition: transform .15s;
+  }
+  .send-btn:active { transform: scale(.9); }
+  .sparkle { color: var(--primary); font-size: 16px; }
+
+  /* ---- Segmented ---- */
+  .segmented {
+    display: flex; background: #EFE7E3; border-radius: 999px; overflow: hidden;
+    margin-bottom: 16px; padding: 4px; gap: 2px;
+  }
+  .segment {
+    flex: 1; text-align: center; padding: 9px 0; font-size: 13px; font-weight: 600;
+    cursor: pointer; user-select: none; border-radius: 999px; color: var(--muted);
+    transition: all .2s;
+  }
+  .segment.selected { background: var(--surface); font-weight: 800; color: var(--ink); box-shadow: var(--shadow-sm); }
+  .segment + .segment { border-left: none; }
+
+  /* ---- Month grid ---- */
+  .month-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .month-head .mh-title { font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+  .icon-btn {
+    background: var(--surface); border: 1px solid var(--border); font-size: 17px; cursor: pointer;
+    color: var(--ink); width: 36px; height: 36px; border-radius: 12px;
+    box-shadow: var(--shadow-sm); transition: transform .15s; font-family: inherit;
+  }
+  .icon-btn:active { transform: scale(.9); }
+  .dow-row, .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .dow-cell { text-align: center; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: var(--faint); padding: 6px 0; }
+  .day-cell {
+    aspect-ratio: 1; border-radius: 14px; text-align: center; padding-top: 7px;
+    font-size: 13px; font-weight: 600; cursor: pointer; user-select: none; color: var(--ink);
+    transition: background .18s, transform .15s;
+  }
+  .day-cell:active { transform: scale(.9); }
+  .day-cell.today { background: var(--rose-soft); color: var(--rose); font-weight: 800; }
+  .day-cell.selected { background: var(--grad); color: #fff; font-weight: 800; box-shadow: 0 6px 14px rgba(46,58,140,.3); }
+  .dots { display: flex; gap: 2.5px; justify-content: center; margin-top: 3px; }
+  .dots span { width: 5px; height: 5px; border-radius: 50%; }
+  .legend { display: flex; gap: 14px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--muted); flex-wrap: wrap; }
+  .legend span.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+
+  /* ---- Approvals ---- */
+  .conflict-box {
+    background: var(--rose-soft); color: var(--rose);
+    border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 600;
+    margin-top: 10px; line-height: 1.5;
+  }
+  .raw-input { font-style: italic; font-size: 12px; color: var(--faint); margin-top: 8px; font-weight: 500; }
+  .approve-row { display: flex; gap: 8px; margin-top: 14px; }
+  .approve-row .btn { flex: 1; padding: 11px 8px; }
+
+  /* ---- Chat ---- */
+  .chat-area { display: flex; flex-direction: column; gap: 9px; padding-bottom: 8px; }
+  .bubble {
+    max-width: 80%; padding: 11px 15px; border-radius: 20px; font-size: 14px;
+    line-height: 1.5; white-space: pre-wrap; font-weight: 500;
+    animation: rise .3s cubic-bezier(.2,.7,.3,1) both; box-shadow: var(--shadow-sm);
+  }
+  .bubble.user {
+    align-self: flex-end; background: var(--grad); color: #fff;
+    border-bottom-right-radius: 6px; box-shadow: 0 6px 16px rgba(46,58,140,.25);
+  }
+  .bubble.ai { align-self: flex-start; background: var(--surface); color: var(--ink); border: 1px solid var(--border); border-bottom-left-radius: 6px; }
+  .bubble .stamp { display: block; font-size: 9.5px; opacity: 0.6; margin-top: 5px; text-align: right; font-weight: 600; }
+  .welcome-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 26px;
+    padding: 22px; margin-bottom: 4px; box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+  }
+  .welcome-card::after {
+    content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(217,109,139,.18), transparent 70%); top: -50px; right: -40px;
+  }
+  .welcome-card h3 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 5px; }
+  .welcome-card p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+  .suggest-row { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; scrollbar-width: none; }
+  .suggest-row::-webkit-scrollbar { display: none; }
+  .typing {
+    align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; border-bottom-left-radius: 6px; padding: 13px 16px; box-shadow: var(--shadow-sm);
+  }
+  .typing span {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--primary); margin: 0 2px; animation: blink 1s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,100% { opacity: .2; transform: translateY(0) } 50% { opacity: 1; transform: translateY(-2px) } }
+  .action-card {
+    background: linear-gradient(135deg,#FCE9DB,#FBDFC9); color: #9A5B36;
+    border-radius: 20px; padding: 16px; border: 1px solid #F6DCC5; box-shadow: var(--shadow-sm);
+  }
+  .action-card b { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 800; }
+  .action-card p { font-size: 13px; margin-bottom: 12px; font-weight: 500; }
+
+  /* ---- Family ---- */
+  .kid-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
+  .kid-row .info { flex: 1; }
+  .kid-row .name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.01em; }
+  .kid-row .lim { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+  .del-btn { background: none; border: none; color: #D9D2E9; cursor: pointer; font-size: 16px; transition: color .2s; }
+  .del-btn:active { color: var(--rose); }
+  .setting-row { display: flex; align-items: center; gap: 12px; }
+  .setting-row .info { flex: 1; }
+  .setting-row .name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.01em; }
+  .setting-row .sub { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+  .switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; cursor: pointer; }
+  .switch input { display: none; }
+  .slider-t { position: absolute; inset: 0; background: #E7E0E4; border-radius: 28px; transition: .25s; }
+  .slider-t:before {
+    content: ""; position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px; transition: .25s cubic-bezier(.2,.7,.3,1.2);
+    box-shadow: 0 2px 6px rgba(30,36,71,.2);
+  }
+  .switch input:checked + .slider-t { background: var(--grad); }
+  .switch input:checked + .slider-t:before { transform: translateX(20px); }
+  .section-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; letter-spacing: -0.01em; margin-bottom: 10px; }
+
+  /* ---- FAB ---- */
+  .fab {
+    position: absolute; right: 22px; bottom: 108px; width: 58px; height: 58px;
+    border-radius: 20px; border: none; background: var(--grad);
+    color: #fff; font-size: 26px; cursor: pointer;
+    box-shadow: 0 12px 28px rgba(46,58,140,.40); z-index: 5;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1.4);
+  }
+  .fab:active { transform: scale(.88) rotate(90deg); }
+
+  /* ---- Dialog ---- */
+  .overlay {
+    position: absolute; inset: 0; background: rgba(22,27,60,0.45); backdrop-filter: blur(4px);
+    z-index: 30; display: flex; align-items: center; justify-content: center; padding: 20px;
+    animation: fadein .2s ease both;
+  }
+  @keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
+  .dialog {
+    background: var(--surface); border-radius: 30px; padding: 24px;
+    width: 100%; max-height: 88%; overflow-y: auto; box-shadow: 0 24px 60px rgba(30,36,71,.35);
+    animation: rise .3s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .dialog h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .dialog label { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; }
+  .dialog input[type=text] {
+    width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 14px;
+    font-size: 14px; font-family: inherit; font-weight: 500; background: var(--surface-soft); color: var(--ink);
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .dialog input[type=text]:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(58,71,172,.12); }
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform .15s; }
+  .swatch:active { transform: scale(.85); }
+  .swatch.selected { border-color: var(--ink); transform: scale(1.08); }
+  input[type=range] { width: 100%; accent-color: var(--primary); }
+
+  /* ---- Snackbar ---- */
+  .snackbar {
+    position: absolute; left: 18px; right: 18px; bottom: 104px; background: #1E2447; color: #F6F4FB;
+    padding: 13px 17px; border-radius: 16px; font-size: 13px; font-weight: 600; line-height: 1.45;
+    z-index: 20; opacity: 0; transform: translateY(12px) scale(.97); transition: .28s cubic-bezier(.2,.7,.3,1);
+    pointer-events: none; box-shadow: 0 14px 34px rgba(30,36,71,.4);
+  }
+  .snackbar.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .snackbar { display: flex; align-items: center; gap: 10px; pointer-events: none; }
+  .snack-btn {
+    background: none; border: none; color: #A9B4FF; font-weight: 800; font-size: 13px;
+    cursor: pointer; font-family: inherit; padding: 4px 6px; flex-shrink: 0;
+  }
+  .loc-line { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 7px; }
+  .remind-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; color: var(--primary-deep);
+    background: var(--primary-soft); border-radius: 999px; padding: 4px 10px; margin-top: 9px; margin-left: 6px;
+  }
+  .dlg-conflicts { border-radius: 12px; padding: 9px 11px; font-size: 12px; font-weight: 600; margin-top: 12px; line-height: 1.5; }
+  .dlg-conflicts.bad { background: var(--rose-soft); color: var(--rose); }
+  .dlg-conflicts.ok { background: var(--mint-soft); color: #2E7D5F; }
+  .cam-btn {
+    background: none; border: none; cursor: pointer; font-size: 12px; color: var(--primary);
+    font-weight: 700; font-family: inherit; padding: 2px 6px;
+  }
+  img.avatar { border: none; }
+
+  .empty { text-align: center; padding: 44px 26px; color: var(--muted); font-weight: 500; font-size: 13.5px; line-height: 1.6; }
+  .empty .big { font-size: 46px; margin-bottom: 12px; }
+  .empty b { color: var(--ink); display: block; margin-bottom: 4px; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+
+  .field-label { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin: 12px 0 6px; color: var(--muted); }
+  .field-input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 14px;
+    font-size: 14px; font-family: inherit; font-weight: 500; background: var(--surface-soft); color: var(--ink);
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .field-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(58,71,172,.12); }
+  select.field-input { appearance: auto; }
+
+  /* ---- Brand header ---- */
+  .brand-row { display: flex; align-items: center; margin-bottom: 16px; }
+  .brand-mark { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 15px; letter-spacing: -0.02em; }
+  .brand-mark .dot {
+    width: 28px; height: 28px; border-radius: 10px; background: var(--grad);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    font-size: 13px; font-weight: 800; box-shadow: 0 4px 10px rgba(46,58,140,.3);
+  }
+  .avatar-stack { margin-left: auto; display: flex; }
+  .avatar-stack .st {
+    width: 31px; height: 31px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 800; color: #fff;
+    border: 2.5px solid var(--bg); margin-left: -9px;
+  }
+  .avatar-stack .st:first-child { margin-left: 0; }
+
+  /* ---- Pastel stat tiles ---- */
+  .stat-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .stat-tile { flex: 1; border-radius: 20px; padding: 13px 14px; cursor: pointer; transition: transform .15s; }
+  .stat-tile:active { transform: scale(.95); }
+  .stat-tile .num { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+  .stat-tile .lbl { font-size: 10.5px; font-weight: 700; letter-spacing: .02em; opacity: .8; margin-top: 1px; }
+  .tile-indigo { background: var(--primary-soft); color: var(--primary-deep); }
+  .tile-peach { background: var(--peach-soft); color: #9A5B36; }
+  .tile-mint { background: var(--mint-soft); color: #2E7D5F; }
+
+  /* ---- Activity icon squircle ---- */
+  .act-icon {
+    width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+
+  /* ---- Assistant avatar in chat ---- */
+  .ai-msg-row { display: flex; gap: 8px; align-items: flex-end; }
+  .ai-avatar {
+    width: 28px; height: 28px; border-radius: 10px; background: var(--grad);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    color: #fff; font-size: 13px; box-shadow: 0 3px 8px rgba(46,58,140,.3); margin-bottom: 18px;
+  }
+
+  /* Travel connector between events */
+  .travel-line {
+    display: flex; align-items: center; gap: 8px; margin: -4px 0 13px 67px;
+    font-size: 11.5px; font-weight: 700; color: var(--faint);
+  }
+  .travel-line .tl-bar { width: 2px; height: 16px; background: var(--border); border-radius: 2px; margin-left: 19px; }
+
+  /* Weather chip */
+  .weather-chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border); font-size: 12px; font-weight: 700;
+    color: var(--muted); box-shadow: var(--shadow-sm); margin-left: auto;
+  }
+
+  /* Member filter chips */
+  .filter-row { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  /* Floating AI button */
+  .ai-fab {
+    position: absolute; left: 22px; bottom: 108px; width: 46px; height: 46px;
+    border-radius: 16px; border: none; background: var(--surface); color: var(--primary);
+    font-size: 19px; cursor: pointer; border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-md); z-index: 5; transition: transform .18s;
+  }
+  .ai-fab:active { transform: scale(.88); }
+
+  /* Role tag */
+  .role-tag {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+    padding: 2px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px;
+  }
+  .role-parent { background: var(--primary-soft); color: var(--primary-deep); }
+  .role-helper { background: var(--gold-soft); color: #8A6D1B; }
+  .role-kid { background: var(--mint-soft); color: #2E7D5F; }
+
+  /* Tutorial */
+  .tour-dots { display: flex; gap: 6px; justify-content: center; margin: 14px 0 4px; }
+  .tour-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+  .tour-dots span.on { background: var(--primary); }
+  .tour-emoji { font-size: 40px; text-align: center; margin-bottom: 10px; }
+
+  /* ---- Memories (photo highlights) ---- */
+  #ambient {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.2s; filter: blur(3px) saturate(1.05);
+  }
+  #ambient.on { opacity: 0.13; }
+  .screen { position: relative; z-index: 1; }
+  .navbar, .fab, .ai-fab, .snackbar { z-index: 5; }
+  .mem-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-top: 4px; }
+  .mem-strip::-webkit-scrollbar { display: none; }
+  .mem-thumb {
+    width: 74px; height: 74px; border-radius: 14px; object-fit: cover; flex-shrink: 0;
+    box-shadow: var(--shadow-sm); cursor: pointer;
+  }
+  .mem-thumb.small { width: 56px; height: 56px; border-radius: 12px; }
+  .mem-overlay {
+    position: absolute; inset: 0; background: #10132B; z-index: 40;
+    display: flex; flex-direction: column; animation: fadein .3s ease both; overflow: hidden;
+  }
+  @keyframes kenburns {
+    from { transform: scale(1.02) translate(0, 0); }
+    to   { transform: scale(1.18) translate(-2.5%, 2%); }
+  }
+  .mem-photo {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    animation: kenburns 4s ease-out both, fadein .6s ease both;
+  }
+  .mem-caption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 22px 30px;
+    background: linear-gradient(transparent, rgba(16,19,43,0.85)); color: #fff; z-index: 2;
+  }
+  .mem-caption .mc-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+  .mem-caption .mc-sub { font-size: 13px; opacity: .85; font-weight: 600; margin-top: 3px; }
+  .mem-close {
+    position: absolute; top: 18px; right: 18px; z-index: 3; width: 38px; height: 38px;
+    border-radius: 50%; border: none; background: rgba(255,255,255,0.18); color: #fff;
+    font-size: 17px; cursor: pointer; backdrop-filter: blur(6px);
+  }
+  .mem-dots { position: absolute; top: 26px; left: 22px; right: 70px; display: flex; gap: 4px; z-index: 3; }
+  .mem-dots span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.25); }
+  .mem-dots span.on { background: #fff; }
+
+  /* On real phones: drop the fake bezel, go full screen */
+  @media (max-width: 520px) {
+    html, body { overflow: hidden; height: 100dvh; overscroll-behavior: none; }
+    body { padding: 0; background: var(--bg); }
+    .demo-note { display: none; }
+    .phone {
+      position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none;
+      border-radius: 0; box-shadow: none;
+    }
+    .screen { padding-top: max(26px, env(safe-area-inset-top)); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .navbar { margin: 0 10px calc(10px + env(safe-area-inset-bottom)); }
+    .fab { bottom: calc(112px + env(safe-area-inset-bottom)); }
+    .ai-fab { bottom: calc(114px + env(safe-area-inset-bottom)); }
+    .snackbar { bottom: calc(108px + env(safe-area-inset-bottom)); }
+    input, select, textarea { font-size: 16px !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="demo-note">
+    <b>MAMA 2.0 — interactive design demo.</b> A browser preview of the redesigned family scheduler.
+    Everything is simulated locally (the AI is mocked) — tap around, add activities, approve things, chat.
+  </div>
+
+  <div class="phone">
+    <div id="ambient"></div>
+    <div class="screen" id="screen"></div>
+    <button class="fab" id="fab" onclick="openAddEvent()" style="display:none">+</button>
+    <button class="ai-fab" id="ai-fab" onclick="switchTab('chat')" title="AI" style="display:none">✦</button>
+    <div class="navbar" id="navbar"></div>
+    <div class="snackbar" id="snackbar"></div>
+    <div id="dialog-root"></div>
+  </div>
+
+<script>
+"use strict";
+
+// ---------- MAMA Cloud gateway (fill these once, then testers just tap Sign in) ----------
+// Deploy cors_proxy_worker.js on Cloudflare Workers, then put its URL here,
+// plus the OAuth Web Client ID whose authorized origin is this demo's URL.
+const MAMA_GATEWAY = {
+  url: "",       // e.g. "https://mama-relay.joshua.workers.dev"
+  clientId: ""   // e.g. "1234567890-abc.apps.googleusercontent.com"
+};
+
+// ---------- Utilities ----------
+const pad = n => String(n).padStart(2, "0");
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseDate = s => { const [y,m,dd] = s.split("-").map(Number); return new Date(y, m-1, dd); };
+const todayStr = () => fmtDate(new Date());
+const addDays = (s, n) => { const d = parseDate(s); d.setDate(d.getDate()+n); return fmtDate(d); };
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function displayDate(s) {
+  const d = parseDate(s);
+  const dows = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  return `${dows[d.getDay()]}, ${MONTHS[d.getMonth()].slice(0,3)} ${pad(d.getDate())}`;
+}
+function fmtTime(mins) {
+  let h = Math.floor(mins/60), m = mins%60;
+  const ap = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${pad(m)} ${ap}`;
+}
+function nowStamp() { const d = new Date(); return fmtTime(d.getHours()*60 + d.getMinutes()); }
+function weekDates(s) {
+  const d = parseDate(s); const sun = new Date(d); sun.setDate(d.getDate() - d.getDay());
+  return Array.from({length:7}, (_,i) => { const x = new Date(sun); x.setDate(sun.getDate()+i); return fmtDate(x); });
+}
+function esc(t) { return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// ---------- i18n ----------
+const I18N = {
+  agenda: ["Agenda","日程"], calendar: ["Calendar","日曆"], approvals: ["Approvals","審批"],
+  assistant: ["Assistant","AI助手"], family: ["Family","家庭"],
+  today: ["Today","今日"], nextUp: ["Next up","接住嚟"], allClear: ["All clear","冇嘢喇"],
+  nothingComing: ["Nothing coming up","暫時冇安排"],
+  enjoyCalm: ["Enjoy the calm, or plan something fun below.","享受吓悠閒，或者喺下面加啲活動。"],
+  statToday: ["TODAY","今日"], statWeek: ["THIS WEEK","今個星期"], statApprove: ["TO APPROVE","待審批"],
+  nlPlaceholder: ['Try "Lexi swim tomorrow 3-4pm"','試下打「Lexi 聽日3-4pm游水」'],
+  emptyDayTitle: ["Nothing scheduled","今日冇安排"],
+  emptyDayBody: ["A free day! Add an activity with + or type a request above.","好悠閒！撳 + 或者喺上面打字加活動。"],
+  findPhotos: ["Find photos","搵相"], del: ["Delete","刪除"], edit: ["Edit","編輯"], undo: ["Undo","復原"],
+  deleted: ["Activity deleted","已刪除活動"], restoredMsg: ["Restored","已復原"],
+  colorByKid: ["Color-coded by kid","以顏色區分家庭成員"],
+  month: ["Month","月"], week: ["Week","週"], day: ["Day","日"],
+  noActs: ["No activities","冇活動"], noActsBody: ["Nothing scheduled for this day.","呢日冇安排。"],
+  addActivity: ["+ Add activity","+ 加活動"],
+  caughtUp: ["You're all caught up","全部處理晒"], awaiting: ["awaiting your review","項等緊你審批"],
+  noPendingTitle: ["No pending activities","冇待審批活動"],
+  noPendingBody: ["When you add activities with natural language or AI chat, they land here for a quick review.","用文字或者AI對話加活動之後，會先擺喺度俾你確認。"],
+  proposedBy: ["Proposed by","提出者"], you: ["You","你"],
+  approve: ["Approve","批准"], reject: ["Reject","拒絕"],
+  chatSub: ["Simulated · add an API key in Family tab for real AI","模擬模式 · 喺「家庭」分頁加API key用真AI"],
+  welcomeTitle: ["Hi! I'm your family scheduling assistant.","你好！我係你嘅家庭日程助手。"],
+  welcomeBody: ["I can add activities, move things around, check for conflicts, and keep an eye on the weather. Just ask!","我可以幫你加活動、改時間、檢查衝突同留意天氣。問我啦！"],
+  chatPlaceholder: ["Ask about your family schedule…","問下家庭日程嘅嘢…"],
+  confirmChange: ["Confirm this change?","確認呢個修改？"], notNow: ["Not now","暫時唔使"],
+  familySub: ["Profiles, preferences and connections","成員、設定同連結"],
+  kids: ["Family members","家庭成員"], perDay: ["activities per day max","每日最多活動"],
+  language: ["Language","語言"],
+  dynName: ["Material You colors","動態色彩"], dynSub: ["Match the app to your wallpaper (Android 12+)","跟手機牆紙配色 (Android 12+)"],
+  mornName: ["Morning summary","早晨摘要"], mornSub: ["Daily schedule notification at 7:00","每朝7點通知當日日程"],
+  syncTitle: ["Calendar sync","日曆同步"],
+  syncGoogle: ["Sync with Google Calendar","同 Google 日曆同步"], syncDevice: ["Sync with device calendar","同手機日曆同步"],
+  trashTitle: ["Recently deleted","最近刪除"], restore: ["Restore","復原"], trashEmpty: ["Nothing here.","暫時冇。"],
+  privacyTitle: ["Privacy & disclaimer","私隱與免責聲明"],
+  privacyBody: ["All demo data stays in this browser only — nothing is uploaded. If you enter an AI key, it is stored locally and sent only to that AI service (e.g. Google Gemini or DeepSeek) when you chat. This is a design demo, not a finished product; schedules here don't affect any real calendar.","所有示範數據只儲存喺呢個瀏覽器，唔會上傳。如果你輸入 AI key，佢只會儲存喺本機，並且只會喺你用AI對話嗰陣，發送去你揀咗嘅AI服務（例如 Google Gemini 或者 DeepSeek）。呢個係設計示範，唔係正式產品；呢度嘅日程唔會影響真實日曆。"],
+  reset: ["Reset demo data","重設示範數據"],
+  newAct: ["New activity","新增活動"], editAct: ["Edit activity","編輯活動"],
+  actTitle: ["Activity title","活動名稱"], whoFor: ["Who's it for?","邊個參加？"], famOpt: ["Family","全家"],
+  dateL: ["Date","日期"], startsAt: ["Starts at","開始時間"], durationL: ["Duration","時長"],
+  bufferL: ["Travel buffer","交通時間"], none: ["None","無"],
+  locationL: ["Location (optional)","地點（可留空）"], remindL: ["Reminder","提醒"], atStart: ["At start","開始時"],
+  addBtn: ["Add","加入"], saveBtn: ["Save","儲存"], cancelBtn: ["Cancel","取消"],
+  conflictsHead: ["Heads up — this clashes:","注意 — 有衝突："], noConflict: ["No conflicts for this time ✓","呢個時間冇衝突 ✓"],
+  addKidTitle: ["Add family member","加入家庭成員"], nameL: ["Name","名字"], colorL: ["Color","顏色"],
+  dailyLimitL: ["Daily activity limit","每日活動上限"],
+  confirmDelKid: ["Remove this profile? Their activities stay but become unassigned.","確定移除呢位成員？佢嘅活動會保留但唔再標名。"],
+  remove: ["Remove","移除"], profileRemoved: ["Profile removed","已移除成員"],
+  addPhoto: ["photo","加相"], titleHint: ["Tap an activity's Edit to change its title, time, duration or buffer.","撳活動嘅「編輯」可以改名、時間、時長同交通時間。"],
+  aiTitle: ["AI provider","AI 供應商"],
+  aiDesc: ["Powers the Assistant chat and the ✨ quick-add parser. Your key is stored only in this browser — it is never part of the file.","驅動 AI 助手同 ✨ 快速輸入解析。你嘅 key 只會儲存喺呢個瀏覽器，唔會包含喺檔案入面。"],
+  providerL: ["Provider","供應商"],
+  authL: ["Authentication","登入方式"],
+  apiKeyOpt: ["API key","API key"],
+  googleLoginOpt: ["Google login","Google 登入"],
+  apiKeyL: ["API key","API key"], apiKeyPh: ["Paste API key","貼上 API key"],
+  oauthClientL: ["OAuth Client ID (from Google Cloud Console → Credentials)","OAuth Client ID（喺 Google Cloud Console → Credentials 建立）"],
+  gcpProjectL: ["GCP Project ID (optional, for quota)","GCP Project ID（可留空，用作配額）"],
+  signInGoogle: ["Sign in with Google","用 Google 登入"],
+  signOutGoogle: ["Sign out of Google","登出 Google"],
+  signedInNote: ["🟢 Signed in — Gemini calls use your Google account","🟢 已登入 — Gemini 會用你嘅 Google 帳戶"],
+  hostNote: ["Requires the demo to be hosted at a URL that's whitelisted in the OAuth client (won't work opened as a local file).","需要將示範放上網址並喺 OAuth client 白名單先用到（直接開本機檔案唔得）。"],
+  modelL: ["Model","模型"],
+  endpointL: ["Endpoint URL","接口網址"],
+  cnHint: [" (China accounts: use api.minimaxi.com)","（中國站帳戶請改用 api.minimaxi.com）"],
+  testConn: ["Test connection","測試連線"],
+  savedLive: ["Saved — Assistant now uses","已儲存 — 助手而家用"],
+  savedNoKey: ["Saved — add an API key to go live","已儲存 — 加返 API key 先可以用真 AI"],
+  testing: ["Testing","測試緊"],
+  connected: ["connected!","連線成功！"],
+  failedPrefix: ["❌ Failed:","❌ 連線失敗："],
+  simLabel: ["Simulated (no key needed)","模擬（唔使 key）"],
+  customLabel: ["Custom (OpenAI-compatible)","自訂（OpenAI 相容）"],
+  mamaLabel: ["MAMA Cloud — Google login, no key","MAMA 雲端 — Google 登入，唔使 key"],
+  mamaDesc: ["Tap Sign in with Google and you're done — Gemini runs through our family gateway. No API key, no Google Cloud setup.","撳一下 Google 登入就得 — Gemini 經我哋嘅家庭 gateway 運行。唔使 API key，唔使搞 Google Cloud。"],
+  gatewayL: ["Gateway URL (Cloudflare Worker)","Gateway 網址（Cloudflare Worker）"],
+  signedInAs: ["Signed in as","已登入："],
+  mamaNotSetup: ["Gateway not configured yet — Joshua needs to fill in MAMA_GATEWAY at the top of this file (see cors_proxy_worker.js).","Gateway 未設定 — 要 Joshua 先喺檔案頂部填好 MAMA_GATEWAY（睇 cors_proxy_worker.js）。"],
+  signInFirst: ["Sign in with Google first (Family tab)","請先用 Google 登入（家庭分頁）"],
+  all: ["All","全部"], mine: ["Mine","我的"],
+  notesL: ["Notes (what to bring, etc.)","備註（要帶啲乜等）"],
+  notesPh: ["e.g. Bring birth certificate","例如：帶出世紙"],
+  actTitlePh: ["e.g. Swimming","例如：游水"],
+  locPh: ["e.g. Kowloon Park pool","例如：九龍公園泳池"],
+  namePh: ["e.g. Mia","例如：小美"],
+  roleL: ["Role","身份"], roleKid: ["Kid","小朋友"], roleParent: ["Parent","家長"], roleHelper: ["Helper","工人姐姐"],
+  helperNote: ["Helpers get a read-only calendar without AI (in the real app).","工人姐姐喺正式app會有唯讀日曆，冇AI功能。"],
+  noLimit: ["No limit","無上限"], noLimitShow: ["No daily limit","每日無上限"],
+  fromPrev: ["from previous","由上一個活動"], fromHere: ["from current location","由而家位置"],
+  goTo: ["Get there","出發去"],
+  openGMaps: ["Google Maps","Google 地圖"], openAMaps: ["Apple Maps","Apple 地圖"],
+  callUber: ["Call an Uber","叫 Uber"], callDidi: ["Call DiDi","叫 DiDi"],
+  copyAddr: ["Copy address","複製地址"],
+  askAI: ["Ask AI","問AI"],
+  umbrella: ["Rain expected — bring an umbrella","預計有雨 — 記得帶遮"],
+  editInTrash: ["Edit & restore","修改並復原"],
+  addAccount: ["+ Add another Google account","+ 加多一個 Google 帳戶"],
+  accounts: ["Synced accounts","已同步帳戶"],
+  tutorialBtn: ["View tutorial","睇教學"],
+  tourNext: ["Next","下一步"], tourDone: ["Let's go!","開始用！"], tourSkip: ["Skip","跳過"],
+  tour1T: ["Welcome to MAMA","歡迎使用 MAMA"],
+  tour1B: ["Your family's schedule in one place — kids, parents and helpers. Swipe through the tabs at the bottom.","一個app管理全家日程 — 小朋友、家長同工人姐姐。用下面嘅分頁切換。"],
+  tour2T: ["Add activities by typing","打字就可以加活動"],
+  tour2B: ["Use the ✨ box on the Agenda: try \"Lexi swim tomorrow 3-4pm\". New activities wait in Approvals for your OK.","喺日程頁用✨輸入框：試下打「Lexi 聽日3-4pm游水」。新活動會去「審批」等你確認。"],
+  memories: ["Memories","回憶"],
+  addPhotos: ["Add photos","加相"],
+  playMemories: ["Play highlights","播放回憶"],
+  memEmpty: ["Add photos to activities and this week's moments become a highlight reel.","幫活動加相，就會自動整合成回憶精華。"],
+  memAdded: ["added to Memories","已加入回憶"],
+  memAiNote: ["In the real app, AI finds these automatically from your camera roll by each activity's time slot.","喺正式app，AI會根據活動時段自動喺相簿搵相。"],
+  ambientName: ["Ambient memories","背景回憶"],
+  ambientSub: ["Softly play your photos behind the app","喺app背景輕輕播放你嘅相"],
+  photoOf: ["Photos","相片"],
+  share: ["Share","分享"],
+  shareWeekT: ["This week's schedule","今個星期日程"],
+  copied: ["Copied to clipboard — paste it anywhere","已複製 — 可以貼去任何app"],
+  tasksTitle: ["Tasks","待辦事項"], addTaskBtn: ["+ Task","+ 待辦"],
+  taskTitleL: ["Task","待辦事項"], taskPh: ["e.g. Return 3 library books","例如：還3本圖書館書"],
+  dueL: ["Due","期限"], noTasks: ["No open tasks 🎉","冇待辦事項 🎉"],
+  taskDoneMsg: ["Nice, done ✓","搞掂 ✓"],
+  confirmDelEvent: ["Delete this activity?","確定刪除呢個活動？"],
+  editMember: ["Edit member","編輯成員"],
+  awaitingOk: ["Awaiting your OK","等你確認"],
+  typeTime: ["or type a time","或者直接輸入時間"],
+  pickDate2: ["or pick from calendar","或者喺日曆揀"],
+  bus: ["Bus","巴士"],
+  tour3T: ["Bring your own AI (optional)","可以接駁真AI（可選）"],
+  tour3B: ["The demo AI is simulated. For real AI, go to Family → AI provider, pick Gemini (free tier) and paste a key — or just ask Joshua to set it up!","示範AI係模擬嘅。想用真AI，去「家庭 → AI供應商」揀 Gemini（有免費額度）貼上key — 或者搵 Joshua 幫你搞掂！"]
+};
+function provLabel(id) {
+  if (id === "sim") return t("simLabel");
+  if (id === "custom") return t("customLabel");
+  if (id === "mama") return t("mamaLabel");
+  return AI_PROVIDERS[id].label;
+}
+const lang = () => (state && state.settings && state.settings.lang) || "en";
+const t = k => (I18N[k] || [k,k])[lang() === "zh" ? 1 : 0];
+const DOWL = () => lang() === "zh" ? ["日","一","二","三","四","五","六"] : DOW;
+function monthLabel(m, y) { return lang() === "zh" ? `${y}年${m}月` : `${MONTHS[m-1]} ${y}`; }
+function displayDateL(s) {
+  if (lang() !== "zh") return displayDate(s);
+  const d = parseDate(s);
+  return `${d.getMonth()+1}月${d.getDate()}日 (星期${["日","一","二","三","四","五","六"][d.getDay()]})`;
+}
+
+// ---------- State ----------
+let state = null;
+const T = todayStr();
+function defaultState() {
+  return {
+    kids: [
+      { id: 1, name: "Lexi", color: "#E64A19", limit: 2, role: "kid" },
+      { id: 2, name: "Leo",  color: "#1976D2", limit: 2, role: "kid" },
+      { id: 3, name: "Sam",  color: "#388E3C", limit: 3, role: "kid" },
+      { id: 4, name: "Mama", color: "#7B1FA2", limit: 999, role: "parent" }
+    ],
+    nextKidId: 5,
+    events: [
+      { id: 1, title: "Swimming",     kidId: 1, date: T,             start: 15*60, end: 16*60, buffer: 15, recurring: true,  notes: "Bring goggles + towel", location: "Kowloon Park Pool" },
+      { id: 2, title: "Piano Lesson", kidId: 2, date: T,             start: 16*60+30, end: 17*60+30, buffer: 0, recurring: false, notes: "", location: "Parkview Music Centre" },
+      { id: 3, title: "Soccer",       kidId: 3, date: addDays(T,1),  start: 10*60, end: 11*60+30, buffer: 20, recurring: true,  notes: "Field 3, wear cleats", location: "Happy Valley Pitch 3" },
+      { id: 4, title: "Dentist",      kidId: 1, date: addDays(T,2),  start: 9*60,  end: 9*60+45,  buffer: 30, recurring: false, notes: "Dr. Chen" },
+      { id: 5, title: "Family Movie Night", kidId: null, date: addDays(T,4), start: 19*60, end: 21*60, buffer: 0, recurring: false, notes: "" }
+    ],
+    nextEventId: 6,
+    pending: [
+      { id: 1, title: "Chinese Lesson", kidId: 2, date: addDays(T,1), start: 10*60+30, end: 11*60+30, buffer: 10, recurring: false, raw: "Leo chinese teacher tomorrow 10:30-11:30 with 10m travel" }
+    ],
+    nextPendingId: 2,
+    tasks: [
+      { id: 1, title: "Return 3 library books", due: addDays(T, 3), kidId: 1, done: false }
+    ],
+    nextTaskId: 2,
+    memories: [],
+    nextMemoryId: 1,
+    chat: [],
+    trash: [],
+    pendingAction: null,
+    settings: { dynamic: true, morning: true, transport: "taxi", seenTour: false,
+      lang: (navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en",
+      ai: { provider: "sim", key: "", model: "", url: "", gAuth: "key", gClientId: "", gProject: "" } }
+  };
+}
+// Debounced persist; on quota overflow, evict oldest photos instead of silently losing ALL changes
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 300);
+}
+function saveNow() {
+  try {
+    localStorage.setItem("mama_demo", JSON.stringify(state));
+  } catch (e) {
+    let dropped = 0;
+    while (state.memories && state.memories.length) {
+      state.memories.shift();
+      dropped++;
+      try {
+        localStorage.setItem("mama_demo", JSON.stringify(state));
+        break;
+      } catch (e2) {}
+    }
+    if (dropped) {
+      toast(lang() === "zh"
+        ? `相片儲存空間滿咗 — 已移除 ${dropped} 張最舊嘅相`
+        : `Photo storage full — removed ${dropped} oldest photo${dropped > 1 ? "s" : ""}`);
+    }
+  }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem("mama_demo");
+    if (raw) { state = JSON.parse(raw); return; }
+  } catch(e) {}
+  state = defaultState();
+}
+load();
+if (!state.settings.ai) state.settings.ai = { provider: "sim", key: "", model: "", url: "" };
+if (state.settings.ai.gAuth === undefined) Object.assign(state.settings.ai, { gAuth: "key", gClientId: "", gProject: "" });
+if (state.settings.ai.gwUrl === undefined) state.settings.ai.gwUrl = "";
+if (!state.settings.lang) state.settings.lang = (navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en";
+if (!state.settings.transport) state.settings.transport = "taxi";
+if (state.settings.seenTour === undefined) state.settings.seenTour = false;
+if (!state.trash) state.trash = [];
+if (!state.tasks) { state.tasks = []; state.nextTaskId = 1; }
+if (!state.memories) { state.memories = []; state.nextMemoryId = 1; }
+if (state.settings.ambient === undefined) state.settings.ambient = false;
+state.kids.forEach(k => { if (!k.role) k.role = "kid"; });
+
+// ---------- Google OAuth (Gemini via Sign in with Google) ----------
+// Access token lives in memory only — never written to localStorage.
+let gAccessToken = null, gTokenExpiry = 0, gTokenClient = null;
+const googleSignedIn = () => !!gAccessToken && Date.now() < gTokenExpiry;
+
+function googleSignIn() {
+  const ai = aiCfg();
+  readAIFields();
+  if (!ai.gClientId) { toast("Paste your OAuth Client ID first (from Google Cloud Console)"); return; }
+  if (location.protocol === "file:") {
+    toast("Google login needs the demo hosted at a URL (e.g. Netlify Drop) — it can't run from a local file");
+    return;
+  }
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    toast("Google sign-in library not loaded yet — check your connection and retry");
+    return;
+  }
+  try {
+    gTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: ai.gClientId,
+      scope: "https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/generative-language.retriever",
+      callback: (resp) => {
+        if (resp.error) { toast(`❌ Google login failed: ${resp.error}`); return; }
+        gAccessToken = resp.access_token;
+        gTokenExpiry = Date.now() + ((resp.expires_in || 3600) - 60) * 1000;
+        toast("✅ Signed in with Google — Gemini is live");
+        render();
+      },
+      error_callback: (err) => toast(`❌ Google login: ${err.type || err.message || "popup blocked or closed"}`)
+    });
+    gTokenClient.requestAccessToken();
+  } catch (e) {
+    toast(`❌ Google login setup failed: ${String(e.message || e).slice(0,120)}`);
+  }
+}
+function googleSignOut() {
+  if (gAccessToken && window.google && google.accounts && google.accounts.oauth2) {
+    try { google.accounts.oauth2.revoke(gAccessToken, () => {}); } catch (e) {}
+  }
+  gAccessToken = null; gTokenExpiry = 0;
+  toast("Signed out of Google"); render();
+}
+
+// ---------- MAMA Cloud: plain Google Sign-In (ID token) -> family gateway ----------
+// The token lives in memory only. No scopes, no cloud project for the user.
+let mamaIdToken = null, mamaTokenExp = 0, mamaEmail = "", mamaGsiCid = null;
+const mamaSignedIn = () => !!mamaIdToken && Date.now() < mamaTokenExp;
+const mamaGatewayUrl = () => ((aiCfg().gwUrl || MAMA_GATEWAY.url || "").trim().replace(/\/+$/, ""));
+const mamaClientId = () => (aiCfg().gClientId || MAMA_GATEWAY.clientId || "").trim();
+
+function initMamaGsi() {
+  if (tab !== "family" || aiCfg().provider !== "mama" || mamaSignedIn()) return;
+  const mount = document.getElementById("gsi-btn");
+  if (!mount || !mount.getBoundingClientRect) return;
+  const cid = mamaClientId();
+  if (!cid || !window.google || !google.accounts || !google.accounts.id) return;
+  try {
+    if (mamaGsiCid !== cid) {
+      google.accounts.id.initialize({
+        client_id: cid,
+        callback: (resp) => {
+          try {
+            const payload = JSON.parse(atob(resp.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+            mamaIdToken = resp.credential;
+            mamaTokenExp = (payload.exp ? payload.exp * 1000 : Date.now() + 3300e3) - 60e3;
+            mamaEmail = payload.email || "";
+            toast(`✅ ${t("signedInAs")} ${mamaEmail}`);
+            render();
+          } catch (e) {
+            toast("❌ Google sign-in parse error");
+          }
+        }
+      });
+      mamaGsiCid = cid;
+    }
+    mount.innerHTML = "";
+    google.accounts.id.renderButton(mount, { theme: "outline", size: "large", shape: "pill", width: 260 });
+  } catch (e) {
+    mount.innerHTML = `<div class="sub" style="font-size:12px;color:var(--rose)">Google sign-in unavailable: ${esc(String(e.message || e))}</div>`;
+  }
+}
+function mamaSignOut() {
+  mamaIdToken = null; mamaTokenExp = 0; mamaEmail = ""; mamaGsiCid = null;
+  toast("Signed out"); render();
+}
+
+// ---------- LLM providers ----------
+const AI_PROVIDERS = {
+  sim:      { label: "Simulated (no key needed)" },
+  mama:     { label: "MAMA Cloud",     model: "gemini-3.5-flash" },
+  gemini:   { label: "Google Gemini",  model: "gemini-3.5-flash" },
+  deepseek: { label: "DeepSeek",       model: "deepseek-chat", url: "https://api.deepseek.com/chat/completions" },
+  openai:   { label: "OpenAI",         model: "gpt-4o-mini",   url: "https://api.openai.com/v1/chat/completions" },
+  minimax:  { label: "MiniMax",        model: "MiniMax-M3",    url: "https://api.minimax.io/v1/chat/completions" },
+  custom:   { label: "Custom (OpenAI-compatible)", model: "", url: "" }
+};
+const aiCfg = () => state.settings.ai;
+const usingRealAI = () => {
+  const ai = aiCfg();
+  if (ai.provider === "sim") return false;
+  if (ai.provider === "mama") return mamaSignedIn() && mamaGatewayUrl() !== "";
+  if (ai.provider === "gemini" && ai.gAuth === "google") return googleSignedIn();
+  return ai.key.trim() !== "";
+};
+
+function extractJson(text) {
+  let t = String(text).replace(/<think>[\s\S]*?<\/think>/gi, "").trim()
+    .replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+  const start = t.indexOf("{");
+  if (start > 0) t = t.slice(start);
+  const end = t.lastIndexOf("}");
+  if (end >= 0) t = t.slice(0, end + 1);
+  return JSON.parse(t);
+}
+
+async function callLLM(systemPrompt, userPrompt) {
+  const ai = aiCfg();
+  const key = ai.key.trim();
+  const model = (ai.model || (AI_PROVIDERS[ai.provider].model || "")).trim();
+
+  // MAMA Cloud: Google login token -> family gateway (server holds the Gemini key)
+  if (ai.provider === "mama") {
+    const gw = mamaGatewayUrl();
+    if (!gw) throw new Error(t("mamaNotSetup"));
+    if (!mamaSignedIn()) throw new Error(t("signInFirst"));
+    const resp = await fetch(`${gw}/gemini?model=${encodeURIComponent(model || "gemini-3.5-flash")}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${mamaIdToken}` },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error ? String(data.error).slice(0, 180) : `Gateway HTTP ${resp.status}`);
+    const text = data.candidates && data.candidates[0] && data.candidates[0].content
+      && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+      && data.candidates[0].content.parts[0].text;
+    if (!text) throw new Error("Empty gateway response");
+    return text;
+  }
+
+  const geminiOAuth = ai.provider === "gemini" && ai.gAuth === "google";
+  if (!key && !geminiOAuth) throw new Error("No API key set");
+
+  if (ai.provider === "gemini") {
+    let url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const headers = { "Content-Type": "application/json" };
+    if (geminiOAuth) {
+      if (!googleSignedIn()) throw new Error("Google session expired — sign in again in the Family tab");
+      headers["Authorization"] = `Bearer ${gAccessToken}`;
+      if (ai.gProject) headers["x-goog-user-project"] = ai.gProject.trim();
+    } else {
+      url += `?key=${encodeURIComponent(key)}`;
+    }
+    const resp = await fetch(url,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+    if (!resp.ok) throw new Error(`Gemini HTTP ${resp.status}: ${(await resp.text()).slice(0,180)}`);
+    const data = await resp.json();
+    const text = data.candidates && data.candidates[0] && data.candidates[0].content
+      && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+      && data.candidates[0].content.parts[0].text;
+    if (!text) throw new Error("Empty Gemini response");
+    return text;
+  }
+
+  // OpenAI-compatible (DeepSeek / OpenAI / MiniMax / custom)
+  const url = (ai.url || AI_PROVIDERS[ai.provider].url || "").trim();
+  if (!url) throw new Error("No endpoint URL set");
+  const body = {
+    model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.3
+  };
+  if (ai.provider === "minimax") {
+    body.thinking = { type: "disabled" }; // skip reasoning output for clean JSON
+    body.temperature = 1.0; // MiniMax recommended range
+  }
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${(await resp.text()).slice(0,180)}`);
+  const data = await resp.json();
+  // MiniMax reports errors inside base_resp even with HTTP 200
+  if (data.base_resp && data.base_resp.status_code !== 0 && data.base_resp.status_msg) {
+    throw new Error(`${data.base_resp.status_code}: ${data.base_resp.status_msg}`);
+  }
+  if (data.error && data.error.message) throw new Error(data.error.message.slice(0,180));
+  const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!text) throw new Error("Empty response");
+  return text;
+}
+
+function friendlyAIError(err) {
+  const m = String(err.message || err);
+  if (/failed to fetch|networkerror|load failed/i.test(m)) {
+    if (aiCfg().provider === "minimax") {
+      return "MiniMax blocks direct browser calls (CORS). Fix: deploy the included cors_proxy_worker.js on Cloudflare Workers (free, ~2 min), then set the Endpoint URL to https://<your-worker>.workers.dev/minimax";
+    }
+    return "Network/CORS blocked — the provider may not allow browser calls from a local file. Try hosting the demo on a URL (e.g. Netlify Drop), or check your connection.";
+  }
+  if (/1004|401|invalid api key|authentication/i.test(m) && aiCfg().provider === "minimax") {
+    return m + " — if your key is from the China platform (minimaxi.com), change the endpoint URL to https://api.minimaxi.com/v1/chat/completions";
+  }
+  return m;
+}
+
+function scheduleContext() {
+  const evs = state.events.map(e =>
+    `[id=${e.id}] [${kidName(e.kidId) || "Family"}] ${e.title} — ${e.date} ${fmtTime(e.start)}-${fmtTime(e.end)}${e.recurring ? " (recurring)" : ""}`
+  ).join("\n");
+  return `Today's date: ${todayStr()} (${displayDate(todayStr())})
+Kids in the family: ${state.kids.map(k => `${k.name} (id=${k.id}, max ${k.limit}/day)`).join(", ")}
+SCHEDULED EVENTS:
+${evs || "None."}`;
+}
+
+function chatSystemPrompt() {
+  return `You are a friendly family scheduling assistant for the MAMA app. Help the parent manage kids' activities.
+
+${scheduleContext()}
+
+Respond with ONLY a JSON object, no markdown fences:
+{
+  "response": "your friendly reply to the parent",
+  "action": null OR {
+    "type": "move" | "cancel" | "add" | "note",
+    "eventId": <id of existing event, for move/cancel/note; else null>,
+    "title": "<activity title, for add>",
+    "kidName": "<kid name or null>",
+    "date": "YYYY-MM-DD",
+    "start": "HH:MM" (24-hour),
+    "durationMinutes": <number, for add; default 60>,
+    "note": "<note text, for type=note (e.g. 'bring sight reading folder')>"
+  }
+}
+
+Rules:
+- Only include "action" when the user asks to change the schedule; otherwise action must be null.
+- "add note to X - Y" means type="note" with the matching eventId and note=Y.
+- Use real eventIds from the list above; never invent ids.
+- Reply in the same language the user writes in (English or Chinese).
+- Keep responses concise, warm, and concrete.`;
+}
+
+// One automatic retry — Ocean/Agnes hit intermittent provider failures
+async function callLLMRetry(systemPrompt, userPrompt) {
+  try {
+    return await callLLM(systemPrompt, userPrompt);
+  } catch (e) {
+    return await callLLM(systemPrompt, userPrompt);
+  }
+}
+
+async function llmChat(userMessage) {
+  const history = state.chat.slice(-8).map(m => `${m.from === "user" ? "User" : "Assistant"}: ${m.text}`).join("\n");
+  const raw = await callLLMRetry(chatSystemPrompt(), `CONVERSATION HISTORY:\n${history}\n\nUSER: ${userMessage}`);
+  const json = extractJson(raw);
+  const reply = { text: json.response || "I understand!" };
+  const a = json.action;
+  if (a && a.type) {
+    const toMins = s => { const m = String(s || "").match(/(\d{1,2}):(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
+    if (a.type === "move" && a.eventId != null) {
+      const ev = state.events.find(e => e.id === a.eventId);
+      const ns = toMins(a.start);
+      if (ev && ns != null) reply.action = { eventId: ev.id, newStart: ns, newDate: a.date || null,
+        desc: `Move ${ev.title} to ${fmtTime(ns)}${a.date && a.date !== ev.date ? " on " + displayDate(a.date) : ""}` };
+    } else if (a.type === "cancel" && a.eventId != null) {
+      const ev = state.events.find(e => e.id === a.eventId);
+      if (ev) reply.action = { eventId: ev.id, cancel: true, desc: `Cancel ${ev.title} (${displayDate(ev.date)})` };
+    } else if (a.type === "note" && a.eventId != null && a.note) {
+      const ev = state.events.find(e => e.id === a.eventId);
+      if (ev) reply.action = { eventId: ev.id, note: a.note, desc: `Add note to ${ev.title}: ${a.note}` };
+    } else if (a.type === "add" && a.title) {
+      const ns = toMins(a.start) ?? 15*60;
+      const kid = state.kids.find(k => a.kidName && k.name.toLowerCase() === String(a.kidName).toLowerCase());
+      reply.action = { add: { title: a.title, kidId: kid ? kid.id : null, date: a.date || todayStr(),
+        start: ns, end: ns + (a.durationMinutes || 60), buffer: 0, recurring: false, raw: userMessage },
+        desc: `Add ${a.title} for ${kid ? kid.name : "the family"} on ${displayDate(a.date || todayStr())} at ${fmtTime(ns)}` };
+    }
+  }
+  return reply;
+}
+
+async function llmParseNL(text) {
+  const system = `You parse family scheduling requests into structured JSON for the MAMA app.
+
+${scheduleContext()}
+
+The input may be very short (e.g. just "Soccer" or "游水") — fill sensible defaults: today's date, 3pm start, 60 minutes. The input may be in English or Chinese — KEEP the title in the same language the user typed (do not translate).
+Relative times like "in 30 mins" mean now + 30 minutes, today.
+Multiple family members can join one event — list them all in "kidNames".
+The title must describe the activity, never a generic word like "Activity".
+
+Return ONLY a JSON object, no markdown fences:
+{"events":[{"title":"...","kidNames":["<name>", "..."],"date":"YYYY-MM-DD","start":"HH:MM","durationMinutes":60,"travelBufferMinutes":0,"recurring":false,"location":"<place or null>"}]}`;
+  const raw = await callLLMRetry(system, text);
+  const json = extractJson(raw);
+  const out = [];
+  for (const e of (json.events || [])) {
+    const m = String(e.start || "15:00").match(/(\d{1,2}):(\d{2})/);
+    const start = m ? (+m[1])*60 + (+m[2]) : 15*60;
+    const names = e.kidNames || (e.kidName ? [e.kidName] : []);
+    const pids = names
+      .map(n => state.kids.find(k => k.name.toLowerCase() === String(n).toLowerCase()))
+      .filter(Boolean).map(k => k.id);
+    out.push({ title: e.title || "Activity", kidId: pids[0] != null ? pids[0] : null,
+      participants: pids, date: e.date || todayStr(),
+      start, end: start + (e.durationMinutes || 60), buffer: e.travelBufferMinutes || 0,
+      recurring: !!e.recurring, location: e.location || null, raw: text });
+  }
+  return out;
+}
+
+let tab = "agenda";
+let agFilter = []; // empty = all members; otherwise selected member ids (multi-select)
+let chatPrefill = "";
+let activeDate = todayStr();
+let calMode = 0; // 0 month 1 week 2 day
+let calDate = todayStr();
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth() + 1;
+let aiTyping = false;
+
+function actEmoji(title) {
+  const t = String(title).toLowerCase();
+  const map = [
+    ["swim","🏊"],["soccer","⚽"],["football","🏈"],["piano","🎹"],["music","🎵"],
+    ["dentist","🦷"],["doctor","🩺"],["school","🏫"],["tennis","🎾"],["karate","🥋"],
+    ["dance","🩰"],["ballet","🩰"],["movie","🍿"],["chinese","📚"],["math","🧮"],
+    ["lesson","📚"],["dinner","🍽️"],["lunch","🥪"],["breakfast","🥞"],["camp","🏕️"],["park","🌳"],
+    ["basketball","🏀"],["art","🎨"],["draw","🎨"],["read","📖"],["hik","🥾"],["cycl","🚴"],["bike","🚴"],
+    ["violin","🎻"],["tutor","📚"],["church","⛪"],["playdate","🧸"],["birthday","🎂"],["party","🎉"],
+    ["游水","🏊"],["足球","⚽"],["鋼琴","🎹"],["畫畫","🎨"],["補習","📚"]
+  ];
+  for (const [k, e] of map) if (t.includes(k)) return e;
+  return "⭐";
+}
+const kidById = id => state.kids.find(k => k.id === id) || null;
+const kidColor = id => (kidById(id) || {}).color || "#6750A4";
+const kidName = id => (kidById(id) || {}).name || null;
+// Participants: events may have participants[] (multi); fall back to kidId
+const eventKids = e => (e.participants && e.participants.length) ? e.participants : (e.kidId != null ? [e.kidId] : []);
+const eventNames = e => {
+  const names = eventKids(e).map(id => kidName(id)).filter(Boolean);
+  return names.length ? names.join(" + ") : t("famOpt");
+};
+// Deterministic simulated travel minutes between two events
+// Travel estimates are location-based (drive time); no mode setting needed —
+// tapping a 📍 location opens maps / ride-hailing instead.
+function travelMins(a, b) {
+  if (!a.location && !b.location) return null;
+  return ((a.id * 7 + b.id * 13) % 23) + 8;
+}
+function travelKm(a, b) {
+  const seed = ((a.id * 7 + b.id * 13) % 23) + 8;
+  return (seed * 0.22).toFixed(1);
+}
+// Deterministic simulated weather per date
+function weatherFor(dateStr) {
+  let h = 0;
+  for (const ch of dateStr) h = (h * 31 + ch.charCodeAt(0)) % 997;
+  const opts = [
+    { icon: "☀️", temp: 27, rain: false }, { icon: "⛅", temp: 24, rain: false },
+    { icon: "🌧", temp: 22, rain: true },  { icon: "☀️", temp: 29, rain: false },
+    { icon: "🌤", temp: 25, rain: false }
+  ];
+  return opts[h % opts.length];
+}
+
+// ---------- Conflict detection ----------
+function checkConflicts(ev, excludeId) {
+  const out = [];
+  for (const e of state.events) {
+    if (e.id === excludeId || e.date !== ev.date) continue;
+    if (ev.start < e.end && e.start < ev.end) {
+      out.push(`Clashes with ${kidName(e.kidId) ? kidName(e.kidId)+"'s" : "the family's"} "${e.title}" (${fmtTime(e.start)} – ${fmtTime(e.end)}).`);
+      continue;
+    }
+    if (ev.start < e.end + (e.buffer||0) && e.start < ev.end + (ev.buffer||0)) {
+      out.push(`Travel time overlaps with "${e.title}" (${ev.buffer||0}m / ${e.buffer||0}m buffers).`);
+    }
+  }
+  if (ev.kidId) {
+    const k = kidById(ev.kidId);
+    const count = state.events.filter(e => e.kidId === ev.kidId && e.date === ev.date && e.id !== excludeId).length;
+    if (k && count >= k.limit) out.push(`${k.name} already has ${count} of ${k.limit} daily activities booked.`);
+  }
+  return out;
+}
+
+// ---------- Mock NL parser ----------
+const ACTIVITY_MAP = { swim: "Swimming", swimming: "Swimming", soccer: "Soccer", football: "Football",
+  piano: "Piano Lesson", music: "Music Practice", dentist: "Dentist Appointment", doctor: "Doctor Appointment",
+  tennis: "Tennis Lesson", karate: "Karate Lesson", dance: "Dance Class", ballet: "Ballet Class",
+  chinese: "Chinese Lesson", math: "Math Tutoring", school: "School Event", dinner: "Dinner", lunch: "Lunch" };
+
+function parseNL(text) {
+  const lower = text.toLowerCase();
+  // All mentioned family members become participants (Agnes: multi-select)
+  const mentioned = state.kids.filter(k => lower.includes(k.name.toLowerCase()));
+  let kid = mentioned[0] || null;
+
+  let title = "Activity";
+  for (const [k,v] of Object.entries(ACTIVITY_MAP)) { if (lower.includes(k)) { title = v; break; } }
+
+  let date = todayStr();
+  if (/(tomorrow|tmrw|tmr|聽日)/.test(lower)) date = addDays(todayStr(), 1);
+  else {
+    const days = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+    for (let i = 0; i < 7; i++) {
+      if (lower.includes(days[i]) || new RegExp(`\\b${days[i].slice(0,3)}\\b`).test(lower)) {
+        const cur = new Date().getDay();
+        let off = (i - cur + 7) % 7; if (off === 0) off = 7;
+        date = addDays(todayStr(), off); break;
+      }
+    }
+  }
+
+  let start = 15*60, dur = 60;
+  // Relative time: "call with miles in 30 mins" / "in 2 hours"
+  const rel = lower.match(/\bin\s+(\d+)\s*(min|mins|minutes|hr|hrs|hour|hours)\b/);
+  if (rel) {
+    const n = +rel[1];
+    const mins = /h/.test(rel[2]) ? n * 60 : n;
+    const now = new Date();
+    start = now.getHours() * 60 + now.getMinutes() + mins;
+    if (start >= 1440) { start -= 1440; date = addDays(todayStr(), 1); }
+    // Title = text minus the "in X mins" phrase and member names
+    let cleaned = text.replace(/\bin\s+\d+\s*(min|mins|minutes|hr|hrs|hour|hours)\b/i, "");
+    for (const k of mentioned) cleaned = cleaned.replace(new RegExp(k.name, "ig"), "");
+    cleaned = cleaned.replace(/\s+/g, " ").trim();
+    if (cleaned) title = cleaned[0].toUpperCase() + cleaned.slice(1);
+    return { title, kidId: kid ? kid.id : null,
+      participants: mentioned.map(k => k.id), date, start, end: start + 30,
+      buffer: 0, recurring: false, location: null, raw: text };
+  }
+  const range = lower.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|–|—|~|至|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  const single = lower.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
+  const to24 = (h, ap) => ap === "pm" && h < 12 ? h+12 : (ap === "am" && h === 12 ? 0 : h);
+  if (range) {
+    const ap1 = range[3] || range[6] || "pm";
+    const sh = to24(+range[1], ap1), eh = to24(+range[4], range[6] || ap1);
+    start = sh*60 + (+(range[2]||0));
+    const end = eh*60 + (+(range[5]||0));
+    dur = end > start ? end - start : 60;
+  } else if (single) {
+    start = to24(+single[1], single[3])*60 + (+(single[2]||0));
+  } else if (lower.includes("lunch") || lower.includes("noon")) start = 12*60;
+  else if (lower.includes("breakfast")) start = 8*60;
+  else if (lower.includes("dinner")) start = 18*60;
+
+  let buffer = 0;
+  if (/travel|buffer/.test(lower)) {
+    const b = lower.match(/(\d+)\s*(m|min)/); buffer = b ? +b[1] : 15;
+  }
+  const recurring = /every|weekly|recurring/.test(lower);
+
+  // Location: "at <place>" where place starts with a letter (avoids "at 3pm")
+  let location = null;
+  const locMatch = text.match(/(?:^|\s)at\s+([A-Za-z][A-Za-z' ]{2,30}?)(?=\s+(?:tomorrow|today|tmrw|tmr|on|from|at\s|\d|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?|every|next)\b|\s*$)/i);
+  if (locMatch) location = locMatch[1].trim();
+
+  // No keyword matched: build a title from the remaining words instead of "Activity"
+  if (title === "Activity") {
+    let cleaned = text
+      .replace(/\d{1,2}(:\d{2})?\s*(am|pm)?\s*(-|–|—|~|至|to)\s*\d{1,2}(:\d{2})?\s*(am|pm)?/ig, "")
+      .replace(/\d{1,2}(:\d{2})?\s*(am|pm)/ig, "")
+      .replace(/\b(tomorrow|today|tmrw|tmr|this|next|every|weekly|on|add|new|at|with|for|min|mins|buffer|travel)\b/ig, "")
+      .replace(/\b(mon|tue|wed|thu|fri|sat|sun)(day|sday|nesday|rsday|urday)?\b/ig, "")
+      .replace(/\d+\s*m\b/ig, "").replace(/\d+/g, "");
+    for (const k of mentioned) cleaned = cleaned.replace(new RegExp(k.name, "ig"), "");
+    if (location) cleaned = cleaned.replace(new RegExp(location, "ig"), "");
+    cleaned = cleaned.replace(/[^\w一-鿿' ]/g, " ").replace(/\s+/g, " ").trim();
+    if (cleaned) title = cleaned[0].toUpperCase() + cleaned.slice(1);
+  }
+
+  return { title, kidId: kid ? kid.id : null, participants: mentioned.map(k => k.id),
+    date, start, end: start + dur, buffer, recurring, location, raw: text };
+}
+
+// ---------- Render root ----------
+const NI = (paths) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+const NAVS = [
+  { id: "agenda",    label: "Agenda",    icon: NI('<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.5" cy="6" r="0.5"/><circle cx="3.5" cy="12" r="0.5"/><circle cx="3.5" cy="18" r="0.5"/>') },
+  { id: "calendar",  label: "Calendar",  icon: NI('<rect x="3" y="4" width="18" height="17" rx="4"/><path d="M16 2v4M8 2v4M3 10h18"/>') },
+  { id: "approvals", label: "Approvals", icon: NI('<path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="M22 4 12 14l-3-3"/>') },
+  { id: "chat",      label: "Assistant", icon: NI('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/>') },
+  { id: "family",    label: "Family",    icon: NI('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') }
+];
+
+const NAV_LABEL_KEYS = { agenda: "agenda", calendar: "calendar", approvals: "approvals", chat: "assistant", family: "family" };
+function render() {
+  const nav = document.getElementById("navbar");
+  nav.innerHTML = NAVS.map(n => `
+    <div class="nav-item ${tab===n.id?"active":""}" onclick="switchTab('${n.id}')">
+      ${n.id==="approvals" && state.pending.length ? `<span class="nav-badge">${state.pending.length}</span>` : ""}
+      <span class="nav-icon">${n.icon}</span><br>${t(NAV_LABEL_KEYS[n.id])}
+    </div>`).join("");
+
+  document.getElementById("fab").style.display = tab === "agenda" ? "block" : "none";
+  // Floating AI shortcut everywhere except the chat itself (Agnes)
+  document.getElementById("ai-fab").style.display = tab === "chat" ? "none" : "block";
+
+  const s = document.getElementById("screen");
+  if (tab === "agenda") s.innerHTML = renderAgenda();
+  else if (tab === "calendar") s.innerHTML = renderCalendar();
+  else if (tab === "approvals") s.innerHTML = renderApprovals();
+  else if (tab === "chat") { s.innerHTML = renderChat(); s.scrollTop = s.scrollHeight; }
+  else s.innerHTML = renderFamily();
+  if (tab === "family") setTimeout(initMamaGsi, 60);
+  ambientApply();
+  save();
+}
+function switchTab(t) { tab = t; render(); }
+
+// ---------- Agenda ----------
+function renderAgenda() {
+  let dayEvents = state.events.filter(e => e.date === activeDate).sort((a,b) => a.start - b.start);
+  if (agFilter.length) dayEvents = dayEvents.filter(e => eventKids(e).some(id => agFilter.includes(id)));
+  const eventDates = new Set(state.events.map(e => e.date));
+  const week = weekDates(activeDate);
+  const wx = weatherFor(activeDate);
+
+  // Timeline with simulated travel connectors (per-viewer via the member filter)
+  let timelineHtml = "";
+  dayEvents.forEach((e, i) => {
+    if (i === 0 && e.location) {
+      timelineHtml += `<div class="travel-line" style="cursor:pointer" onclick="openGoSheet('${esc(e.location).replace(/'/g, "\\'")}')"><span>🚗 ~${12 + (e.id * 5) % 14} min · ${t("fromHere")} ›</span></div>`;
+    } else if (i > 0) {
+      const mins = travelMins(dayEvents[i-1], e);
+      if (mins) {
+        const dest = e.location || "";
+        timelineHtml += `<div class="travel-line" ${dest ? `style="cursor:pointer" onclick="openGoSheet('${esc(dest).replace(/'/g, "\\'")}')"` : ""}><div class="tl-bar"></div><span>🚗 ~${mins} min · ${travelKm(dayEvents[i-1], e)} km · ${t("fromPrev")}${dest ? " ›" : ""}</span></div>`;
+      }
+    }
+    timelineHtml += eventCardHtml(e);
+  });
+
+  // Next upcoming event across the whole schedule
+  const nowM = new Date().getHours() * 60 + new Date().getMinutes();
+  const tS = todayStr();
+  const hero = state.events
+    .filter(e => e.date > tS || (e.date === tS && e.end > nowM))
+    .sort((a,b) => a.date === b.date ? a.start - b.start : (a.date < b.date ? -1 : 1))[0];
+
+  const weekSet = new Set(weekDates(tS));
+  const weekCount = state.events.filter(e => weekSet.has(e.date)).length;
+
+  return `
+    <div class="brand-row">
+      <div class="brand-mark"><span class="dot">M</span> MAMA</div>
+      <div class="avatar-stack">
+        ${state.kids.slice(0, 4).map(k => k.photo
+          ? `<img class="st" src="${k.photo}" style="object-fit:cover" alt="${esc(k.name)}">`
+          : `<div class="st" style="background:${k.color}">${esc(k.name[0])}</div>`).join("")}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <h1 class="title" style="flex:1">${activeDate === todayStr() ? t("today") : displayDateL(activeDate)}</h1>
+      <span class="weather-chip" style="cursor:pointer" onclick="shareWeek()" title="${t("share")}">📤</span>
+      <span class="weather-chip">${wx.icon} ${wx.temp}°C</span>
+    </div>
+    <div class="subtitle">${lang() === "zh" ? `已排 ${dayEvents.length} 項活動` : `${dayEvents.length} ${dayEvents.length === 1 ? "activity" : "activities"} scheduled`}${wx.rain ? ` · ☔ ${t("umbrella")}` : ""}</div>
+
+    ${hero ? `
+    <div class="hero-card">
+      <div class="hero-label">${t("nextUp")}</div>
+      <div class="hero-title">${esc(hero.title)}</div>
+      <div class="hero-sub">${kidName(hero.kidId) || t("famOpt")} · ${hero.date === tS ? t("today") : displayDateL(hero.date)}${hero.location ? " · 📍" + esc(hero.location) : ""}</div>
+      <span class="hero-chip">${fmtTime(hero.start)} – ${fmtTime(hero.end)}</span>
+    </div>` : `
+    <div class="hero-card">
+      <div class="hero-label">${t("allClear")}</div>
+      <div class="hero-title">${t("nothingComing")}</div>
+      <div class="hero-sub">${t("enjoyCalm")}</div>
+    </div>`}
+
+    <div class="stat-row">
+      <div class="stat-tile tile-indigo" onclick="pickDate(todayStr())"><div class="num">${dayEvents.length}</div><div class="lbl">${t("statToday")}</div></div>
+      <div class="stat-tile tile-mint" onclick="calMode=1;calDate=todayStr();switchTab('calendar')"><div class="num">${weekCount}</div><div class="lbl">${t("statWeek")}</div></div>
+      <div class="stat-tile tile-peach" onclick="switchTab('approvals')"><div class="num">${state.pending.length}</div><div class="lbl">${t("statApprove")}</div></div>
+    </div>
+
+    ${state.pending.slice(0, 2).map(p => `
+    <div class="card" style="border:1.5px solid var(--peach);background:#FFFBF7">
+      <div class="event-row">
+        <div class="act-icon" style="background:var(--peach-soft)">${actEmoji(p.title)}</div>
+        <div style="flex:1">
+          <div class="event-sub" style="color:#9A5B36;font-weight:800;font-size:10.5px;letter-spacing:.04em">⏳ ${t("awaitingOk")}</div>
+          <div class="event-title">${esc(p.title)}</div>
+          <div class="event-sub">${(p.participants && p.participants.length ? p.participants.map(id => kidName(id)).filter(Boolean).join(" + ") : (kidName(p.kidId) || t("famOpt")))} · ${displayDateL(p.date)} · ${fmtTime(p.start)}${p.location ? " · 📍" + esc(p.location) : ""}</div>
+        </div>
+      </div>
+      <div class="approve-row" style="margin-top:10px">
+        <button class="btn btn-filled" style="padding:9px 8px" onclick="approvePending(${p.id})">✓ ${t("approve")}</button>
+        <button class="btn btn-outlined" style="padding:9px 8px" onclick="rejectPending(${p.id})">✕ ${t("reject")}</button>
+      </div>
+    </div>`).join("")}
+
+    ${renderTasksCard()}
+
+    ${state.memories.length ? renderMemoriesCard() : ""}
+
+    <div class="week-row">${week.map(d => {
+      const dd = parseDate(d);
+      return `<div class="day-pill ${d===activeDate?"selected":""}" onclick="pickDate('${d}')">
+        <div class="dow">${DOWL()[dd.getDay()]}</div>
+        <div class="dom">${dd.getDate()}</div>
+        <div style="font-size:10px;line-height:1.2">${weatherFor(d).icon}</div>
+        <div class="dot ${eventDates.has(d)?"":"hidden"}"></div>
+      </div>`; }).join("")}
+    </div>
+
+    <div class="input-row">
+      <span class="sparkle">✨</span>
+      <input id="nl-input" placeholder='${t("nlPlaceholder")}'
+             onkeydown="if(event.key==='Enter')submitNL()">
+      <button class="send-btn" onclick="submitNL()">➤</button>
+    </div>
+
+    <div class="filter-row">
+      <span class="chip small ${agFilter.length === 0 ? "selected" : ""}" onclick="setAgFilter(null)">${t("all")}</span>
+      ${state.kids.map(k => `<span class="chip small ${agFilter.includes(k.id) ? "selected" : ""}" onclick="setAgFilter(${k.id})">${esc(k.name)}</span>`).join("")}
+    </div>
+
+    ${dayEvents.length === 0 ? `
+      <div class="empty"><div class="big">🌤️</div><b>${t("emptyDayTitle")}</b>
+      ${t("emptyDayBody")}</div>`
+    : timelineHtml}
+    <div style="height:70px"></div>`;
+}
+
+function eventCardHtml(e) {
+  const c = kidColor(eventKids(e)[0]);
+  const kn = eventNames(e);
+  return `
+  <div class="timeline">
+    <div class="time-col">
+      <div class="time-start">${fmtTime(e.start)}</div>
+      <div class="time-end">${fmtTime(e.end)}</div>
+    </div>
+    <div class="card event-card" style="flex:1">
+      <div class="accent-bar" style="background:${c}"></div>
+      <div class="event-body">
+        <div class="event-row">
+          <div class="act-icon" style="background:${c}22">${actEmoji(e.title)}</div>
+          <div style="flex:1">
+            <div class="event-title">${eventKids(e).length === 1 && kidName(eventKids(e)[0]) ? `[${esc(kidName(eventKids(e)[0]))}] ` : ""}${esc(e.title)} ${e.recurring ? "🔁" : ""}</div>
+            <div class="event-sub">${esc(kn)} · ${fmtTime(e.start)} – ${fmtTime(e.end)} · ${weatherFor(e.date).icon}${weatherFor(e.date).temp}°</div>
+          </div>
+        </div>
+        ${e.location ? `<div class="loc-line" style="cursor:pointer" onclick="openGoSheet('${esc(e.location).replace(/'/g, "\\'")}')">📍 ${esc(e.location)} <span style="color:var(--primary);font-weight:800">›</span></div>` : ""}
+        ${e.buffer ? `<div class="buffer-tag">🚗 ${e.buffer}m ${lang() === "zh" ? "交通" : "travel"}</div>` : ""}${e.remind ? `<span class="remind-tag">🔔 ${e.remind === -1 ? t("atStart") : e.remind + "m"}</span>` : ""}
+        ${e.notes ? `<div class="event-sub" style="margin-top:6px">📝 ${esc(e.notes)}</div>` : ""}
+        ${(() => {
+          const ph = state.memories.filter(m => m.eventId === e.id).slice(-4);
+          return ph.length ? `<div class="mem-strip" style="margin-top:9px">${ph.map(m =>
+            `<img class="mem-thumb small" src="${m.dataUrl}" alt="" onclick="openMemories(${state.memories.indexOf(m)})">`).join("")}</div>` : "";
+        })()}
+        <div class="card-actions">
+          <span class="chip small" onclick="askAIAbout(${e.id})">✦ ${t("askAI")}</span>
+          <span class="chip small" onclick="addEventPhotos(${e.id})">📸 ${t("addPhotos")}</span>
+          <span class="chip small" onclick="openAddEvent(${e.id})">✎ ${t("edit")}</span>
+          <span class="chip small" title="${t("del")}" onclick="deleteEvent(${e.id})">🗑 ${t("del")}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function pickDate(d) { activeDate = d; render(); }
+// Multi-select member filter (Agnes: e.g. Leo + Mama together)
+function setAgFilter(id) {
+  if (id == null) agFilter = [];
+  else if (agFilter.includes(id)) agFilter = agFilter.filter(x => x !== id);
+  else agFilter.push(id);
+  render();
+}
+
+// ---------- Tasks (Agnes: library books, exam reminders) ----------
+function renderTasksCard() {
+  const open = state.tasks.filter(x => !x.done).sort((a,b) => a.due < b.due ? -1 : 1);
+  return `
+    <div class="card">
+      <div class="section-title" style="margin-bottom:6px">☑️ ${t("tasksTitle")}
+        <span style="flex:1"></span>
+        <span class="chip small" onclick="openAddTask()">${t("addTaskBtn")}</span>
+      </div>
+      ${open.length === 0 ? `<div class="sub" style="font-size:12px;color:var(--muted)">${t("noTasks")}</div>`
+      : open.map(x => `
+        <div class="kid-row" style="padding:6px 0">
+          <input type="checkbox" style="width:19px;height:19px;accent-color:var(--primary);cursor:pointer" onchange="doneTask(${x.id})">
+          <div class="info">
+            <div class="name" style="font-size:13.5px">${esc(x.title)}</div>
+            <div class="lim">${x.kidId ? esc(kidName(x.kidId)) + " · " : ""}${t("dueL")}: ${displayDateL(x.due)}</div>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+function doneTask(id) {
+  const x = state.tasks.find(x => x.id === id);
+  if (x) { x.done = true; toast(t("taskDoneMsg")); render(); }
+}
+function openAddTask() {
+  const kidChips = [`<span class="chip small at-kid selected" data-kid="">${t("famOpt")}</span>`]
+    .concat(state.kids.map(k => `<span class="chip small at-kid" data-kid="${k.id}">${esc(k.name)}</span>`)).join(" ");
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeDialog()">
+      <div class="dialog">
+        <h2>${t("tasksTitle")}</h2>
+        <label>${t("taskTitleL")}</label>
+        <input type="text" id="at-title" placeholder="${t("taskPh")}">
+        <label>${t("dueL")}</label>
+        <input type="date" id="at-due" class="field-input" value="${addDays(todayStr(), 3)}">
+        <label>${t("whoFor")}</label>
+        <div class="chip-row">${kidChips}</div>
+        <div class="dialog-actions">
+          <button class="btn btn-outlined" onclick="closeDialog()">${t("cancelBtn")}</button>
+          <button class="btn btn-filled" onclick="confirmAddTask()">${t("addBtn")}</button>
+        </div>
+      </div>
+    </div>`;
+  document.querySelectorAll(".at-kid").forEach(el => el.onclick = () => selectChip(el, "at-kid"));
+}
+function confirmAddTask() {
+  const title = document.getElementById("at-title").value.trim();
+  if (!title) { toast(lang() === "zh" ? "入返個待辦名先" : "Give the task a name"); return; }
+  const due = document.getElementById("at-due").value || addDays(todayStr(), 3);
+  const kidSel = document.querySelector(".at-kid.selected");
+  state.tasks.push({ id: state.nextTaskId++, title, due,
+    kidId: kidSel && kidSel.dataset.kid ? +kidSel.dataset.kid : null, done: false });
+  closeDialog(); render();
+}
+
+// ---------- Memories: photo highlights per activity ----------
+function downscalePhoto(file, maxSide, cb) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      cb(canvas.toDataURL("image/jpeg", 0.72));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addEventPhotos(eventId) {
+  const ev = state.events.find(e => e.id === eventId);
+  if (!ev) return;
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.multiple = true;
+  input.onchange = () => {
+    const files = [...(input.files || [])].slice(0, 6);
+    let done = 0;
+    files.forEach(f => downscalePhoto(f, 560, (dataUrl) => {
+      state.memories.push({
+        id: state.nextMemoryId++, eventId: ev.id, dataUrl,
+        title: ev.title, who: eventNames(ev), date: ev.date, addedAt: Date.now()
+      });
+      // Keep localStorage healthy: cap at 18 photos, oldest out first
+      while (state.memories.length > 18) state.memories.shift();
+      if (++done === files.length) {
+        save();
+        toast(`📸 ${done} ${t("memAdded")}`);
+        render();
+      }
+    }));
+  };
+  input.click();
+}
+
+// ---- Highlight reel (Ken Burns slideshow) ----
+let memTimer = null, memIdx = 0;
+function openMemories(startIdx) {
+  if (!state.memories.length) { toast(t("memEmpty")); return; }
+  memIdx = startIdx || 0;
+  showMemSlide();
+  clearInterval(memTimer);
+  memTimer = setInterval(() => { memIdx = (memIdx + 1) % state.memories.length; showMemSlide(); }, 4000);
+}
+function showMemSlide() {
+  const m = state.memories[memIdx];
+  if (!m) { closeMemories(); return; }
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="mem-overlay" onclick="memNext(event)">
+      <div class="mem-dots">${state.memories.map((_, i) => `<span class="${i <= memIdx ? "on" : ""}"></span>`).join("")}</div>
+      <button class="mem-close" onclick="event.stopPropagation();closeMemories()">✕</button>
+      <img class="mem-photo" src="${m.dataUrl}" alt="${esc(m.title)}">
+      <div class="mem-caption">
+        <div class="mc-title">${actEmoji(m.title)} ${esc(m.title)}</div>
+        <div class="mc-sub">${esc(m.who)} · ${displayDateL(m.date)}</div>
+      </div>
+    </div>`;
+}
+function memNext(ev) {
+  memIdx = (memIdx + 1) % state.memories.length;
+  showMemSlide();
+}
+function closeMemories() {
+  clearInterval(memTimer);
+  memTimer = null;
+  closeDialog();
+}
+
+// ---- Ambient background: memories softly behind the app ----
+let ambientIdx = 0;
+function ambientApply() {
+  const el = document.getElementById("ambient");
+  if (!el || !el.classList) return;
+  if (state.settings.ambient && state.memories.length) {
+    const m = state.memories[ambientIdx % state.memories.length];
+    el.style.backgroundImage = `url(${m.dataUrl})`;
+    el.classList.add("on");
+  } else {
+    el.classList.remove("on");
+  }
+}
+setInterval(() => {
+  if (state.settings.ambient && state.memories.length) { ambientIdx++; ambientApply(); }
+}, 9000);
+
+function renderMemoriesCard() {
+  const recent = state.memories.slice(-8).reverse();
+  return `
+    <div class="card">
+      <div class="section-title" style="margin-bottom:6px">📸 ${t("memories")}
+        <span style="flex:1"></span>
+        ${state.memories.length ? `<span class="chip small selected" onclick="openMemories(0)">▶ ${t("playMemories")}</span>` : ""}
+      </div>
+      ${recent.length === 0
+        ? `<div class="sub" style="font-size:12px;color:var(--muted)">${t("memEmpty")}</div>`
+        : `<div class="mem-strip">${recent.map(m =>
+            `<img class="mem-thumb" src="${m.dataUrl}" alt="${esc(m.title)}" onclick="openMemories(${state.memories.indexOf(m)})">`).join("")}</div>`}
+      <div class="sub" style="font-size:11px;color:var(--faint);margin-top:8px">${t("memAiNote")}</div>
+    </div>`;
+}
+
+// ---------- "Get there" sheet: maps + ride-hailing for a location ----------
+function openGoSheet(loc) {
+  const q = encodeURIComponent(loc);
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeDialog()">
+      <div class="dialog">
+        <h2>📍 ${esc(loc)}</h2>
+        <div class="sub" style="font-size:12px;color:var(--muted);margin-bottom:12px">${t("goTo")} · ${t("fromHere")}</div>
+        <button class="btn btn-outlined btn-block" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${q}','_blank')">🗺 ${t("openGMaps")}</button>
+        <button class="btn btn-outlined btn-block" onclick="window.open('https://maps.apple.com/?q=${q}','_blank')"> ${t("openAMaps")}</button>
+        <button class="btn btn-outlined btn-block" onclick="window.open('https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=${q}','_blank')">🚗 ${t("callUber")}</button>
+        <button class="btn btn-outlined btn-block" onclick="window.location.href='diditaxi://'">🚕 ${t("callDidi")}</button>
+        <button class="btn btn-outlined btn-block" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(loc).replace(/'/g, "\\'")}').then(()=>toast(t('copied')));closeDialog()">📋 ${t("copyAddr")}</button>
+        <div class="dialog-actions">
+          <button class="btn btn-filled" onclick="closeDialog()">${t("cancelBtn")}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ---------- Share this week (Agnes: forward schedule to other apps) ----------
+function shareWeek() {
+  const wk = weekDates(todayStr());
+  const zh = lang() === "zh";
+  let text = `📅 ${t("shareWeekT")} — MAMA\n`;
+  for (const d of wk) {
+    const evs = state.events.filter(e => e.date === d).sort((a,b) => a.start - b.start);
+    if (!evs.length) continue;
+    text += `\n${displayDateL(d)} ${weatherFor(d).icon}\n`;
+    for (const e of evs) {
+      text += `  ${fmtTime(e.start)}–${fmtTime(e.end)} ${eventNames(e)}: ${e.title}`;
+      if (e.location) text += ` 📍${e.location}`;
+      if (e.notes) text += ` 📝${e.notes}`;
+      text += "\n";
+    }
+  }
+  const openTasks = state.tasks.filter(x => !x.done);
+  if (openTasks.length) {
+    text += `\n☑️ ${t("tasksTitle")}\n`;
+    for (const x of openTasks) text += `  • ${x.title} (${t("dueL")} ${displayDateL(x.due)})\n`;
+  }
+  if (navigator.share) {
+    navigator.share({ title: "MAMA", text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => toast(t("copied")));
+  } else {
+    toast(text.slice(0, 200));
+  }
+}
+function askAIAbout(id) {
+  const e = state.events.find(x => x.id === id);
+  if (!e) return;
+  const zh = lang() === "zh";
+  const wx = weatherFor(e.date);
+  // Fixed-format summary first (Agnes), then free conversation
+  const summary = [
+    `${actEmoji(e.title)} ${e.title}`,
+    `👥 ${eventNames(e)}`,
+    `🗓 ${displayDateL(e.date)} · ${fmtTime(e.start)} – ${fmtTime(e.end)}`,
+    e.location ? `📍 ${e.location}` : null,
+    e.buffer ? `🚗 ${e.buffer}m` : null,
+    e.notes ? `📝 ${e.notes}` : null,
+    `${wx.icon} ${wx.temp}°C${wx.rain ? " ☔" : ""}`,
+    "",
+    zh ? "想改時間、加備註定取消？直接講。" : "Want to move it, add a note, or cancel? Just say so."
+  ].filter(x => x !== null).join("\n");
+  state.chat.push({ from: "ai", text: summary, time: nowStamp() });
+  switchTab("chat");
+  const inp = document.getElementById("chat-input");
+  if (inp) inp.focus();
+}
+let nextTrashId = 1;
+function deleteEvent(id) {
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  // Confirm first (Agnes), undo still available after (Ocean)
+  openConfirm(`${ev.title} — ${t("confirmDelEvent")}`, t("del"), () => {
+    state.events = state.events.filter(e => e.id !== id);
+    const trashId = nextTrashId++;
+    state.trash.unshift({ trashId, deletedAt: Date.now(), data: ev });
+    state.trash = state.trash.slice(0, 10);
+    toast(`${t("deleted")}: ${ev.title}`, t("undo"), () => restoreEvent(trashId));
+    render();
+  });
+}
+async function submitNL() {
+  const inp = document.getElementById("nl-input");
+  const text = (inp.value || "").trim();
+  if (!text) return;
+  inp.value = "";
+  if (usingRealAI()) {
+    toast(`Parsing with ${AI_PROVIDERS[aiCfg().provider].label}…`);
+    try {
+      const results = await llmParseNL(text);
+      if (!results.length) throw new Error("no events returned");
+      for (const p of results) { p.id = state.nextPendingId++; state.pending.push(p); }
+      toast(results.length > 1
+        ? `Parsed ${results.length} activities into your Approvals queue!`
+        : `Parsed "${results[0].title}" into your Approvals queue!`);
+      render();
+      return;
+    } catch (err) {
+      toast(`AI error (${err.message.slice(0,80)}) — used local parser`);
+    }
+  }
+  const p = parseNL(text);
+  p.id = state.nextPendingId++;
+  state.pending.push(p);
+  toast(`Parsed "${p.title}" into your Approvals queue!`);
+  render();
+}
+
+// ---------- Calendar ----------
+function renderCalendar() {
+  let body = "";
+  if (calMode === 0) body = renderMonth();
+  else if (calMode === 1) body = renderWeekView();
+  else body = renderDayView();
+  return `
+    <h1 class="title">${t("calendar")}</h1>
+    <div class="subtitle">${t("colorByKid")}</div>
+    <div class="segmented">
+      ${[t("month"),t("week"),t("day")].map((m,i) =>
+        `<div class="segment ${calMode===i?"selected":""}" onclick="setCalMode(${i})">${m}</div>`).join("")}
+    </div>
+    ${body}`;
+}
+function setCalMode(i) { calMode = i; render(); }
+function calShift(n) {
+  calMonth += n;
+  if (calMonth > 12) { calMonth = 1; calYear++; }
+  if (calMonth < 1) { calMonth = 12; calYear--; }
+  render();
+}
+function renderMonth() {
+  const first = new Date(calYear, calMonth-1, 1);
+  const days = new Date(calYear, calMonth, 0).getDate();
+  const offset = first.getDay();
+  let cells = "";
+  for (let i = 0; i < offset; i++) cells += `<div></div>`;
+  for (let d = 1; d <= days; d++) {
+    const ds = `${calYear}-${pad(calMonth)}-${pad(d)}`;
+    const evs = state.events.filter(e => e.date === ds);
+    const cls = ds === calDate ? "selected" : (ds === todayStr() ? "today" : "");
+    cells += `<div class="day-cell ${cls}" onclick="pickCalDay('${ds}')">${d}
+      <div class="dots">${evs.slice(0,3).map(e => `<span style="background:${kidColor(e.kidId)}"></span>`).join("")}</div>
+    </div>`;
+  }
+  return `
+    <div class="month-head">
+      <button class="icon-btn" onclick="calShift(-1)">‹</button>
+      <span class="mh-title">${monthLabel(calMonth, calYear)}</span>
+      <button class="icon-btn" onclick="calShift(1)">›</button>
+    </div>
+    <div class="dow-row">${(lang() === "zh" ? ["日","一","二","三","四","五","六"] : ["S","M","T","W","T","F","S"]).map(d => `<div class="dow-cell">${d}</div>`).join("")}</div>
+    <div class="month-grid">${cells}</div>
+    <div class="legend">${state.kids.map(k => `<span><span class="dot" style="background:${k.color}"></span>${esc(k.name)}</span>`).join("")}</div>`;
+}
+function pickCalDay(ds) { calDate = ds; calMode = 2; render(); }
+function renderWeekView() {
+  return weekDates(calDate).map(d => {
+    const evs = state.events.filter(e => e.date === d).sort((a,b) => a.start - b.start);
+    return `<div class="card" style="${d===todayStr()?"background:#F2F0FB":""}" onclick="pickCalDay('${d}')">
+      <div style="display:flex;justify-content:space-between">
+        <b style="font-size:14px">${displayDateL(d)}</b>
+        ${evs.length ? `<span style="color:var(--primary);font-weight:700;font-size:13px">${evs.length}</span>` : ""}
+      </div>
+      ${evs.map(e => `<div style="font-size:13px;margin-top:6px">
+        <span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${kidColor(eventKids(e)[0])};margin-right:6px"></span>
+        ${fmtTime(e.start)} · <b style="font-weight:700">${esc(eventNames(e))}</b>: ${esc(e.title)}</div>`).join("")}
+    </div>`;
+  }).join("");
+}
+function renderDayView() {
+  const evs = state.events.filter(e => e.date === calDate).sort((a,b) => a.start - b.start);
+  return `
+    <div class="month-head">
+      <button class="icon-btn" onclick="calDate=addDays(calDate,-1);render()">‹</button>
+      <span class="mh-title">${displayDateL(calDate)}</span>
+      <button class="icon-btn" onclick="calDate=addDays(calDate,1);render()">›</button>
+    </div>
+    ${evs.length === 0 ? `<div class="empty"><div class="big">🗓️</div><b>${t("noActs")}</b>${t("noActsBody")}</div>`
+      : evs.map(e => eventCardHtml(e)).join("")}
+    <button class="btn btn-outlined btn-block" onclick="openAddEvent(null, calDate)">${t("addActivity")}</button>
+    <div style="height:20px"></div>`;
+}
+
+// ---------- Approvals ----------
+function renderApprovals() {
+  return `
+    <h1 class="title">${t("approvals")}</h1>
+    <div class="subtitle">${state.pending.length === 0 ? t("caughtUp") : (lang() === "zh" ? `${state.pending.length} ${t("awaiting")}` : `${state.pending.length} ${t("awaiting")}`)}</div>
+    ${state.pending.length === 0 ? `
+      <div class="empty"><div class="big">📥</div><b>${t("noPendingTitle")}</b>
+      ${t("noPendingBody")}</div>`
+    : state.pending.map(p => {
+        const conflicts = checkConflicts(p, null);
+        const kid = kidById(p.kidId), kn = kidName(p.kidId);
+        return `<div class="card">
+          <div class="event-row">
+            ${kidAvatarHtml(kid, 40)}
+            <div style="flex:1">
+              <div class="event-title">${esc(p.title)} ${p.recurring ? "🔁" : ""}</div>
+              <div class="event-sub">${kn || t("famOpt")} · ${displayDateL(p.date)} · ${fmtTime(p.start)} – ${fmtTime(p.end)}</div>
+            </div>
+          </div>
+          ${p.location ? `<div class="loc-line" style="cursor:pointer" onclick="openGoSheet('${esc(p.location).replace(/'/g, "\\'")}')">📍 ${esc(p.location)} <span style="color:var(--primary);font-weight:800">›</span></div>` : ""}
+          <div class="raw-input">${t("proposedBy")} ${esc(p.proposedBy || t("you"))} · "${esc(p.raw)}"</div>
+          ${conflicts.length ? `<div class="conflict-box">${conflicts.map(x => "⚠️ " + esc(x)).join("<br>")}</div>` : ""}
+          <div class="approve-row">
+            <button class="btn btn-filled" onclick="approvePending(${p.id})">✓ ${t("approve")}</button>
+            <button class="btn btn-outlined" onclick="rejectPending(${p.id})">✕ ${t("reject")}</button>
+          </div>
+        </div>`;
+      }).join("")}`;
+}
+function approvePending(id) {
+  const p = state.pending.find(x => x.id === id);
+  if (!p) return;
+  state.events.push({ id: state.nextEventId++, title: p.title, kidId: p.kidId,
+    participants: p.participants || [], date: p.date,
+    start: p.start, end: p.end, buffer: p.buffer, recurring: p.recurring,
+    location: p.location || null, notes: "", proposedBy: p.proposedBy || t("you") });
+  state.pending = state.pending.filter(x => x.id !== id);
+  toast(lang() === "zh" ? `已加入「${p.title}」✓` : `"${p.title}" added to the schedule ✓`);
+  render();
+}
+function rejectPending(id) {
+  state.pending = state.pending.filter(x => x.id !== id);
+  toast("Rejected"); render();
+}
+
+// ---------- Chat (simulated AI) ----------
+function renderChat() {
+  const msgs = state.chat.map(m => m.from === "ai"
+    ? `<div class="ai-msg-row"><div class="ai-avatar">✦</div><div class="bubble ai">${esc(m.text)}<span class="stamp">${m.time}</span></div></div>`
+    : `<div class="bubble user">${esc(m.text)}<span class="stamp">${m.time}</span></div>`).join("");
+  return `
+    <div style="display:flex;align-items:center">
+      <div style="flex:1">
+        <h1 class="title">${t("assistant")}</h1>
+        <div class="subtitle">${usingRealAI()
+          ? "🟢 Live: " + AI_PROVIDERS[aiCfg().provider].label + " (" + (aiCfg().model || AI_PROVIDERS[aiCfg().provider].model) + ")"
+          : t("chatSub")}</div>
+      </div>
+      <button class="icon-btn" title="Clear chat" onclick="state.chat=[];state.pendingAction=null;render()">🗑️</button>
+    </div>
+    <div class="chat-area">
+      ${state.chat.length === 0 ? `
+        <div class="welcome-card">✨<h3>${t("welcomeTitle")}</h3>
+        <p>${t("welcomeBody")}</p></div>` : ""}
+      ${msgs}
+      ${aiTyping ? `<div class="typing"><span></span><span></span><span></span></div>` : ""}
+      ${state.pendingAction ? `
+        <div class="action-card"><b>${t("confirmChange")}</b><p>${esc(state.pendingAction.desc)}</p>
+          <div class="approve-row">
+            <button class="btn btn-filled" onclick="applyChatAction()">${t("approve")}</button>
+            <button class="btn btn-outlined" onclick="dismissChatAction()">${t("notNow")}</button>
+          </div>
+        </div>` : ""}
+    </div>
+    ${state.chat.length === 0 ? `<div class="suggest-row">
+      ${(lang() === "zh"
+        ? ["今日有咩安排？","將Lexi游水改去4pm","今個星期有冇衝突？","睇下踢波嗰日天氣"]
+        : ["What's on today?","Move Lexi's swim to 4pm","Any conflicts this week?","Check the weather for soccer"])
+        .map(s => `<span class="chip small" onclick="sendChat('${s.replace(/'/g,"\\'")}')">${s}</span>`).join("")}
+    </div>` : ""}
+    <div class="input-row" style="margin-top:8px">
+      <input id="chat-input" placeholder="${t("chatPlaceholder")}"
+             onkeydown="if(event.key==='Enter')sendChatFromInput()">
+      <button class="send-btn" onclick="sendChatFromInput()">➤</button>
+    </div>`;
+}
+function sendChatFromInput() {
+  const inp = document.getElementById("chat-input");
+  const t = (inp.value || "").trim();
+  if (t) { inp.value = ""; sendChat(t); }
+}
+function sendChat(text) {
+  state.chat.push({ from: "user", text, time: nowStamp() });
+  aiTyping = true; render();
+
+  if (usingRealAI()) {
+    llmChat(text).then(reply => {
+      aiTyping = false;
+      state.chat.push({ from: "ai", text: reply.text, time: nowStamp() });
+      if (reply.action) state.pendingAction = reply.action;
+      render();
+    }).catch(err => {
+      aiTyping = false;
+      state.chat.push({ from: "ai", text: `⚠️ ${AI_PROVIDERS[aiCfg().provider].label} call failed (${err.message.slice(0,120)}). Falling back to the simulated assistant:`, time: nowStamp() });
+      const reply = mockAgent(text);
+      state.chat.push({ from: "ai", text: reply.text, time: nowStamp() });
+      if (reply.action) state.pendingAction = reply.action;
+      render();
+    });
+    return;
+  }
+
+  setTimeout(() => {
+    aiTyping = false;
+    const reply = mockAgent(text);
+    state.chat.push({ from: "ai", text: reply.text, time: nowStamp() });
+    if (reply.action) state.pendingAction = reply.action;
+    render();
+  }, 900 + Math.random()*600);
+}
+function mockAgent(text) {
+  const lower = text.toLowerCase();
+
+  const zh = lang() === "zh";
+
+  // ---- Slash commands (Agnes's /help reference) ----
+  if (lower.startsWith("/")) {
+    if (lower.startsWith("/help")) {
+      return { text: zh
+        ? "指令：\n/summary — 今日日程摘要\n/query <字> — 搜尋活動（例：/query swim）\n/querythisweek — 今個星期所有活動\n/help — 呢個列表\n直接打字都得：加活動、改時間、取消、加備註。"
+        : "Commands:\n/summary — today's schedule summary\n/query <term> — search events (e.g. /query swim)\n/querythisweek — everything this week\n/help — this list\nOr just type naturally: add, move, cancel, add notes." };
+    }
+    if (lower.startsWith("/summary")) {
+      const evs = state.events.filter(e => e.date === todayStr()).sort((a,b) => a.start-b.start);
+      if (!evs.length) return { text: zh ? "今日冇活動。" : "Nothing scheduled today." };
+      return { text: (zh ? "今日摘要：\n" : "Today's summary:\n") + evs.map(e =>
+        `• ${fmtTime(e.start)} ${eventNames(e)}: ${e.title}${e.location ? " 📍" + e.location : ""}${e.notes ? " 📝" + e.notes : ""}`).join("\n") };
+    }
+    if (lower.startsWith("/querythisweek")) {
+      const wk = new Set(weekDates(todayStr()));
+      const evs = state.events.filter(e => wk.has(e.date)).sort((a,b) => a.date === b.date ? a.start-b.start : (a.date < b.date ? -1 : 1));
+      if (!evs.length) return { text: zh ? "今個星期冇活動。" : "Nothing this week." };
+      return { text: (zh ? "今個星期：\n" : "This week:\n") + evs.map(e => `• ${displayDateL(e.date)} ${fmtTime(e.start)} — ${eventNames(e)}: ${e.title}`).join("\n") };
+    }
+    if (lower.startsWith("/query")) {
+      const term = text.slice(6).trim().toLowerCase();
+      if (!term) return { text: zh ? "用法：/query <關鍵字或日期>" : "Usage: /query <keyword or date>" };
+      const evs = state.events.filter(e =>
+        e.title.toLowerCase().includes(term) || e.date.includes(term) ||
+        (e.location || "").toLowerCase().includes(term) ||
+        (kidName(e.kidId) || "").toLowerCase().includes(term));
+      if (!evs.length) return { text: zh ? `搵唔到「${term}」相關嘅活動。` : `No events matching "${term}".` };
+      return { text: (zh ? "搵到：\n" : "Found:\n") + evs.map(e => `• ${displayDateL(e.date)} ${fmtTime(e.start)} — ${eventNames(e)}: ${e.title}`).join("\n") };
+    }
+    return { text: zh ? "唔識呢個指令 — 打 /help 睇下有咩用得。" : "Unknown command — type /help to see what's available." };
+  }
+
+  // ---- Add a note to an event (Agnes: "add note to today's piano lesson - bring folder") ----
+  const noteMatch = text.match(/(?:add\s+)?note(?:\s+to)?\s+(?:today'?s\s+|tomorrow'?s\s+)?(.+?)\s*[-–—:]\s*(.+)/i)
+    || text.match(/(?:同|幫)?(.+?)(?:加|寫)(?:個)?(?:備註|note)[：:\-\s]+(.+)/);
+  if (noteMatch) {
+    const [, targetStr, note] = noteMatch;
+    const target = state.events.find(e =>
+      targetStr.toLowerCase().includes(e.title.toLowerCase()) ||
+      e.title.toLowerCase().includes(targetStr.trim().toLowerCase()));
+    if (target) return {
+      text: zh
+        ? `好呀 — 幫「${target.title}」（${displayDateL(target.date)}）加備註：「${note.trim()}」。確認？`
+        : `Sure — add this note to ${target.title} (${displayDateL(target.date)}): "${note.trim()}". Confirm below.`,
+      action: { eventId: target.id, note: note.trim(), desc: zh
+        ? `備註 → ${target.title}：${note.trim()}`
+        : `Add note to ${target.title}: ${note.trim()}` }
+    };
+    return { text: zh ? `搵唔到叫「${targetStr.trim()}」嘅活動。` : `I couldn't find an event called "${targetStr.trim()}".` };
+  }
+
+  // Weather (Celsius per feedback)
+  if (/(weather|rain|storm|outdoor|天氣|落雨)/.test(lower)) {
+    const outdoor = state.events.find(e => /swim|soccer|tennis|park|camp|游水|足球/i.test(e.title));
+    if (outdoor) return { text: zh
+      ? `${outdoor.title}嗰日天氣唔錯！天晴 24°C，微風。冇天氣問題！☀️`
+      : `The forecast for ${outdoor.title} looks good! Clear sky, 24°C with a light breeze. No weather concerns! ☀️` };
+    return { text: zh
+      ? "未來幾日冇戶外活動，天氣都幾穩定。☀️"
+      : "Nothing outdoors coming up in the next few days, and the forecast looks calm. ☀️" };
+  }
+
+  // Today / schedule questions
+  if ((/(today|on today|schedule)/.test(lower) || /今日|安排/.test(text)) && !/move|change|cancel|改|取消/.test(lower)) {
+    const evs = state.events.filter(e => e.date === todayStr()).sort((a,b) => a.start-b.start);
+    if (!evs.length) return { text: zh ? "今日好空閒 — 冇活動安排。好好休息！🌿" : "Today is wide open — no activities scheduled. Enjoy the calm! 🌿" };
+    return { text: (zh ? "今日安排：\n" : "Here's today:\n") + evs.map(e => `• ${kidName(e.kidId) || t("famOpt")}: ${e.title} — ${fmtTime(e.start)}`).join("\n") };
+  }
+
+  // Conflicts
+  if (/conflict|clash|overlap/.test(lower)) {
+    const issues = [];
+    for (const e of state.events) {
+      for (const msg of checkConflicts(e, e.id)) issues.push(`• ${e.title} (${displayDate(e.date)}): ${msg}`);
+    }
+    if (!issues.length) return { text: "I checked the whole schedule — no overlaps, travel-buffer clashes, or daily-limit issues. You're all clear! ✅" };
+    return { text: "I found a few things to look at:\n" + [...new Set(issues)].slice(0,4).join("\n") };
+  }
+
+  // Move / reschedule
+  const mv = lower.match(/(?:move|change|reschedule|swap)\s+(.*?)(?:\s+to\s+)(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  if (mv) {
+    const target = state.events.find(e =>
+      lower.includes(e.title.toLowerCase().split(" ")[0].toLowerCase()) ||
+      (kidName(e.kidId) && lower.includes(kidName(e.kidId).toLowerCase())));
+    if (target) {
+      let h = +mv[2]; const ap = mv[4] || (h < 8 ? "pm" : "am");
+      if (ap === "pm" && h < 12) h += 12;
+      const newStart = h*60 + (+(mv[3]||0));
+      return {
+        text: `Sure! I can move ${kidName(target.kidId) ? kidName(target.kidId)+"'s" : ""} ${target.title} from ${fmtTime(target.start)} to ${fmtTime(newStart)} on ${displayDate(target.date)}. Confirm below.`,
+        action: { eventId: target.id, newStart, desc: `Change time of ${target.title} from ${fmtTime(target.start)} to ${fmtTime(newStart)}` }
+      };
+    }
+    return { text: "I couldn't find that activity. Try the exact name or the kid's name — e.g. \"Move Lexi's swim to 4pm\"." };
+  }
+
+  // Cancel
+  if (/cancel|delete|remove/.test(lower)) {
+    const target = state.events.find(e => lower.includes(e.title.toLowerCase().split(" ")[0]) ||
+      (kidName(e.kidId) && lower.includes(kidName(e.kidId).toLowerCase())));
+    if (target) return {
+      text: `Okay — cancel ${target.title} on ${displayDate(target.date)} at ${fmtTime(target.start)}? Confirm below.`,
+      action: { eventId: target.id, cancel: true, desc: `Cancel ${target.title} (${displayDate(target.date)})` }
+    };
+    return { text: "Which activity should I cancel? Tell me the name or the kid it belongs to." };
+  }
+
+  // Add (route through NL parser)
+  if (/add|book|schedule|new/.test(lower)) {
+    const p = parseNL(text);
+    p.id = state.nextPendingId++;
+    state.pending.push(p);
+    return { text: `I've drafted "${p.title}" for ${kidName(p.kidId) || "the family"} on ${displayDate(p.date)} at ${fmtTime(p.start)} — it's waiting in your Approvals tab. ✅` };
+  }
+
+  return { text: "I can help you check today's schedule, move or cancel activities, scan for conflicts, or add something new — for example: \"Add Leo tennis Friday 4pm\". (In the real app I'm powered by Google Gemini.)" };
+}
+function applyChatAction() {
+  const a = state.pendingAction;
+  if (a) {
+    if (a.add) {
+      state.events.push({ id: state.nextEventId++, title: a.add.title, kidId: a.add.kidId,
+        date: a.add.date, start: a.add.start, end: a.add.end, buffer: a.add.buffer,
+        recurring: a.add.recurring, notes: `Added via assistant: '${a.add.raw}'` });
+      state.chat.push({ from: "ai", text: `✅ Added ${a.add.title} on ${displayDate(a.add.date)} at ${fmtTime(a.add.start)}.`, time: nowStamp() });
+    } else {
+      const ev = state.events.find(e => e.id === a.eventId);
+      if (ev && a.note) {
+        ev.notes = ev.notes ? ev.notes + " · " + a.note : a.note;
+        state.chat.push({ from: "ai", text: lang() === "zh" ? `✅ 已幫「${ev.title}」加備註。` : `✅ Note added to ${ev.title}.`, time: nowStamp() });
+      } else if (ev && a.cancel) {
+        state.events = state.events.filter(e => e.id !== a.eventId);
+        state.chat.push({ from: "ai", text: `✅ Cancelled ${ev.title}.`, time: nowStamp() });
+      } else if (ev) {
+        const dur = ev.end - ev.start;
+        ev.start = a.newStart; ev.end = a.newStart + dur;
+        if (a.newDate) ev.date = a.newDate;
+        state.chat.push({ from: "ai", text: `✅ Done! ${ev.title} is now at ${fmtTime(ev.start)}${a.newDate ? " on " + displayDate(a.newDate) : ""}.`, time: nowStamp() });
+      }
+    }
+  }
+  state.pendingAction = null; render();
+}
+function dismissChatAction() {
+  state.chat.push({ from: "ai", text: "No problem! I cancelled that change.", time: nowStamp() });
+  state.pendingAction = null; render();
+}
+
+// ---------- Family ----------
+function renderFamily() {
+  return `
+    <h1 class="title">${t("family")}</h1>
+    <div class="subtitle">${t("familySub")}</div>
+
+    <div class="card">
+      <div class="setting-row">
+        <span style="font-size:20px">🌐</span>
+        <div class="info"><div class="name">${t("language")}</div></div>
+        <span class="chip small ${lang() === "en" ? "selected" : ""}" onclick="setLang('en')">English</span>
+        <span class="chip small ${lang() === "zh" ? "selected" : ""}" onclick="setLang('zh')">中文</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">${t("kids")}
+        <span style="flex:1"></span>
+        <button class="icon-btn" onclick="openAddKid()">＋</button>
+      </div>
+      ${state.kids.map(k => `
+        <div class="kid-row">
+          ${kidAvatarHtml(k, 42)}
+          <div class="info" style="cursor:pointer" onclick="openAddKid(${k.id})" title="${t("editMember")}">
+            <div class="name">${esc(k.name)}<span class="role-tag role-${k.role || "kid"}">${t(k.role === "parent" ? "roleParent" : k.role === "helper" ? "roleHelper" : "roleKid")}</span> <span style="color:var(--faint);font-size:11px">✎</span></div>
+            <div class="lim">${k.limit >= 999 ? t("noLimitShow") : (lang() === "zh" ? `每日最多 ${k.limit} 項活動` : `Up to ${k.limit} ${k.limit === 1 ? "activity" : "activities"} per day`)}</div>
+          </div>
+          <button class="cam-btn" onclick="pickKidPhoto(${k.id})">📷 ${t("addPhoto")}</button>
+          <button class="del-btn" title="${t("del")}" onclick="deleteKid(${k.id})">🗑</button>
+        </div>`).join("")}
+      <div class="sub" style="font-size:11px;color:var(--faint);margin-top:6px">${t("titleHint")}</div>
+    </div>
+
+
+    <div class="card">
+      <div class="setting-row">
+        <span style="font-size:20px">🎨</span>
+        <div class="info"><div class="name">${t("dynName")}</div>
+        <div class="sub">${t("dynSub")}</div></div>
+        <label class="switch"><input type="checkbox" ${state.settings.dynamic ? "checked" : ""}
+          onchange="state.settings.dynamic=this.checked;save()">
+        <span class="slider-t"></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="setting-row">
+        <span style="font-size:20px">☀️</span>
+        <div class="info"><div class="name">${t("mornName")}</div>
+        <div class="sub">${t("mornSub")}</div></div>
+        <label class="switch"><input type="checkbox" ${state.settings.morning ? "checked" : ""}
+          onchange="state.settings.morning=this.checked;save()">
+        <span class="slider-t"></span></label>
+      </div>
+    </div>
+
+    ${renderMemoriesCard()}
+
+    <div class="card">
+      <div class="setting-row">
+        <span style="font-size:20px">🌅</span>
+        <div class="info"><div class="name">${t("ambientName")}</div>
+        <div class="sub">${t("ambientSub")}</div></div>
+        <label class="switch"><input type="checkbox" ${state.settings.ambient ? "checked" : ""}
+          onchange="state.settings.ambient=this.checked;save();ambientApply()">
+        <span class="slider-t"></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🗑 ${t("trashTitle")}</div>
+      ${state.trash.length === 0
+        ? `<div class="sub" style="font-size:12px;color:var(--muted)">${t("trashEmpty")}</div>`
+        : state.trash.map(x => `
+          <div class="kid-row">
+            <div class="act-icon" style="background:#F3EDEA">${actEmoji(x.data.title)}</div>
+            <div class="info">
+              <div class="name">${esc(x.data.title)}</div>
+              <div class="lim">${kidName(x.data.kidId) || t("famOpt")} · ${displayDateL(x.data.date)} ${fmtTime(x.data.start)}</div>
+            </div>
+            <button class="cam-btn" onclick="editFromTrash(${x.trashId})">✎ ${t("editInTrash")}</button>
+            <button class="cam-btn" onclick="restoreEvent(${x.trashId})">↩ ${t("restore")}</button>
+          </div>`).join("")}
+    </div>
+
+    <div class="card">
+      <div class="section-title">🧠 ${t("aiTitle")}</div>
+      <div class="sub" style="font-size:12px;color:var(--on-surface-variant);margin-bottom:4px">
+        ${aiCfg().provider === "mama" ? t("mamaDesc") : t("aiDesc")}</div>
+      <label class="field-label">${t("providerL")}</label>
+      <select id="ai-provider" class="field-input" onchange="aiProviderChanged(this.value)">
+        ${Object.keys(AI_PROVIDERS).map(id =>
+          `<option value="${id}" ${aiCfg().provider === id ? "selected" : ""}>${provLabel(id)}</option>`).join("")}
+      </select>
+      <div id="ai-extra" style="${aiCfg().provider === "sim" ? "display:none" : ""}">
+        ${aiCfg().provider === "mama" ? `
+        ${mamaGatewayUrl() && mamaClientId() ? "" : `<div class="dlg-conflicts bad" style="margin-top:10px">⚠️ ${t("mamaNotSetup")}</div>`}
+        <div style="margin-top:12px;display:flex;flex-direction:column;align-items:center">
+          ${mamaSignedIn()
+            ? `<div class="sub" style="font-size:12.5px;color:#2E7D5F;font-weight:700;margin-bottom:8px">🟢 ${t("signedInAs")} ${esc(mamaEmail)}</div>
+               <button class="btn btn-outlined btn-block" onclick="mamaSignOut()">${t("signOutGoogle")}</button>`
+            : `<div id="gsi-btn" style="min-height:44px"></div>`}
+        </div>
+        <details style="margin-top:10px">
+          <summary class="sub" style="font-size:11.5px;color:var(--faint);cursor:pointer">⚙︎ Advanced</summary>
+          <label class="field-label">${t("gatewayL")}</label>
+          <input type="text" id="ai-gw" class="field-input" placeholder="https://mama-relay.….workers.dev"
+                 value="${esc(aiCfg().gwUrl || MAMA_GATEWAY.url)}">
+          <label class="field-label">OAuth Client ID</label>
+          <input type="text" id="ai-gclient" class="field-input" placeholder="1234…apps.googleusercontent.com"
+                 value="${esc(aiCfg().gClientId || MAMA_GATEWAY.clientId)}">
+        </details>` : ""}
+        ${aiCfg().provider === "gemini" ? `
+        <label class="field-label">${t("authL")}</label>
+        <div class="chip-row">
+          <span class="chip small ${aiCfg().gAuth === "key" ? "selected" : ""}" onclick="setGeminiAuth('key')">${t("apiKeyOpt")}</span>
+          <span class="chip small ${aiCfg().gAuth === "google" ? "selected" : ""}" onclick="setGeminiAuth('google')">${t("googleLoginOpt")}</span>
+        </div>` : ""}
+        <div style="${aiCfg().provider === "gemini" && aiCfg().gAuth === "google" ? "" : "display:none"}">
+          <label class="field-label">${t("oauthClientL")}</label>
+          <input type="text" id="ai-gclient" class="field-input" placeholder="1234…apps.googleusercontent.com"
+                 value="${esc(aiCfg().gClientId)}">
+          <label class="field-label">${t("gcpProjectL")}</label>
+          <input type="text" id="ai-gproject" class="field-input" placeholder="my-project-id"
+                 value="${esc(aiCfg().gProject)}">
+          <div style="margin-top:10px">
+            ${googleSignedIn()
+              ? `<div class="sub" style="font-size:12px;color:#388E3C;margin-bottom:6px">${t("signedInNote")}</div>
+                 <button class="btn btn-outlined btn-block" onclick="googleSignOut()">${t("signOutGoogle")}</button>`
+              : `<button class="btn btn-filled btn-block" onclick="googleSignIn()">${t("signInGoogle")}</button>`}
+          </div>
+          <div class="sub" style="font-size:11px;color:var(--on-surface-variant);margin-top:8px">
+            ${t("hostNote")}
+          </div>
+        </div>
+        <div style="${(aiCfg().provider === "gemini" && aiCfg().gAuth === "google") || aiCfg().provider === "mama" ? "display:none" : ""}">
+        <label class="field-label">${t("apiKeyL")}</label>
+        <input type="password" id="ai-key" class="field-input" placeholder="${t("apiKeyPh")}"
+               value="${esc(aiCfg().key)}">
+        </div>
+        <div style="${aiCfg().provider === "mama" ? "display:none" : ""}">
+        <label class="field-label">${t("modelL")}</label>
+        <input type="text" id="ai-model" class="field-input"
+               placeholder="${esc(AI_PROVIDERS[aiCfg().provider].model || "model name")}"
+               value="${esc(aiCfg().model)}">
+        </div>
+        <div style="${aiCfg().provider === "gemini" || aiCfg().provider === "mama" ? "display:none" : ""}">
+          <label class="field-label">${t("endpointL")}${aiCfg().provider === "minimax" ? t("cnHint") : ""}</label>
+          <input type="text" id="ai-url" class="field-input" placeholder="https://…/v1/chat/completions"
+                 value="${esc(aiCfg().url || AI_PROVIDERS[aiCfg().provider].url || "")}">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-filled" style="flex:1" onclick="saveAI()">${t("saveBtn")}</button>
+          <button class="btn btn-outlined" style="flex:1" onclick="testAI()">${t("testConn")}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🔄 ${t("syncTitle")}</div>
+      <div class="sub" style="font-size:11.5px;color:var(--muted);margin-bottom:6px">${t("accounts")}:</div>
+      <div class="chip-row" style="margin-bottom:10px">
+        <span class="chip small selected">agnes@gmail.com</span>
+        <span class="chip small selected">papa.wong@gmail.com</span>
+        <span class="chip small" onclick="toast(lang()==='zh'?'模擬：正式app可以連結多個Google帳戶':'Simulated: the real app links multiple Google accounts')">${t("addAccount")}</span>
+      </div>
+      <button class="btn btn-filled btn-block" onclick="toast('Simulated: 2 exported, 1 imported from Google Calendar ✓')">${t("syncGoogle")}</button>
+      <button class="btn btn-outlined btn-block" onclick="toast('Simulated: device calendar synced ✓')">${t("syncDevice")}</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📖 ${t("tutorialBtn")}</div>
+      <button class="btn btn-outlined btn-block" onclick="openTour(0)">${t("tutorialBtn")}</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🔒 ${t("privacyTitle")}</div>
+      <div class="sub" style="font-size:12px;color:var(--muted);line-height:1.6">${t("privacyBody")}</div>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <div class="sub" style="font-size:12px;color:var(--on-surface-variant)">
+        <a href="#" style="color:var(--primary)" onclick="resetDemo();return false">${t("reset")}</a>
+      </div>
+    </div>
+    <div style="height:20px"></div>`;
+}
+function aiProviderChanged(p) {
+  const ai = aiCfg();
+  ai.provider = p;
+  ai.model = AI_PROVIDERS[p].model || "";
+  if (p !== "custom" && p !== "mama") ai.url = AI_PROVIDERS[p].url || "";
+  save(); render();
+}
+function readAIFields() {
+  const ai = aiCfg();
+  const k = document.getElementById("ai-key"), m = document.getElementById("ai-model"), u = document.getElementById("ai-url");
+  const gc = document.getElementById("ai-gclient"), gp = document.getElementById("ai-gproject");
+  const gw = document.getElementById("ai-gw");
+  if (gw && gw.value !== undefined && ai.provider === "mama") ai.gwUrl = gw.value.trim();
+  if (k) ai.key = k.value.trim();
+  if (m) ai.model = m.value.trim() || (AI_PROVIDERS[ai.provider].model || "");
+  if (u && ai.provider !== "gemini") ai.url = u.value.trim();
+  if (gc) ai.gClientId = gc.value.trim();
+  if (gp) ai.gProject = gp.value.trim();
+  save();
+}
+function setGeminiAuth(mode) {
+  readAIFields();
+  aiCfg().gAuth = mode;
+  save(); render();
+}
+function saveAI() {
+  readAIFields();
+  toast(usingRealAI()
+    ? `${t("savedLive")} ${provLabel(aiCfg().provider)} (${aiCfg().model})`
+    : t("savedNoKey"));
+}
+async function testAI() {
+  readAIFields();
+  if (!usingRealAI()) { toast(lang() === "zh" ? "揀個供應商再貼上 API key 先" : "Pick a provider and paste an API key first"); return; }
+  toast(`${t("testing")} ${provLabel(aiCfg().provider)}…`);
+  try {
+    const raw = await callLLM(
+      'Reply with ONLY this JSON: {"response":"ok"}',
+      "Connection test"
+    );
+    const json = extractJson(raw);
+    toast(json.response ? `✅ ${provLabel(aiCfg().provider)} ${t("connected")}` : "Connected, but odd reply — should still work");
+  } catch (err) {
+    toast(`${t("failedPrefix")} ${friendlyAIError(err).slice(0,220)}`);
+  }
+}
+function deleteKid(id) {
+  const kid = state.kids.find(k => k.id === id);
+  if (!kid) return;
+  openConfirm(`${kid.name} — ${t("confirmDelKid")}`, t("remove"), () => {
+    state.kids = state.kids.filter(k => k.id !== id);
+    state.events.forEach(e => { if (e.kidId === id) e.kidId = null; });
+    toast(t("profileRemoved"));
+    render();
+  });
+}
+function setLang(l) { state.settings.lang = l; save(); render(); }
+function kidAvatarHtml(kid, size) {
+  const s = size || 42;
+  if (kid && kid.photo) {
+    return `<img src="${kid.photo}" class="avatar" style="width:${s}px;height:${s}px;object-fit:cover" alt="${esc(kid.name)}">`;
+  }
+  const c = kid ? kid.color : "#3A47AC";
+  const n = kid ? kid.name[0] : "★";
+  return `<div class="avatar" style="background:${c}2E;color:${c};width:${s}px;height:${s}px">${esc(n)}</div>`;
+}
+function pickKidPhoto(id) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const side = Math.min(img.width, img.height);
+        canvas.width = 96; canvas.height = 96;
+        canvas.getContext("2d").drawImage(
+          img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 96, 96
+        );
+        const kid = state.kids.find(k => k.id === id);
+        if (kid) { kid.photo = canvas.toDataURL("image/jpeg", 0.82); save(); render(); }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+function resetDemo() { state = defaultState(); save(); activeDate = todayStr(); toast("Demo reset"); render(); }
+
+// ---------- Dialogs ----------
+function closeDialog() { document.getElementById("dialog-root").innerHTML = ""; }
+
+let _aeEditId = null;
+function openAddEvent(editId, presetDate) {
+  _aeEditId = editId || null;
+  const editing = _aeEditId ? state.events.find(e => e.id === _aeEditId) : null;
+  const selKids = editing ? eventKids(editing) : [];
+  const startVal = editing ? editing.start : 15 * 60;
+  const durVal = editing ? (editing.end - editing.start) : 60;
+  const bufVal = editing ? editing.buffer : 0;
+  const remindVal = editing ? (editing.remind || 0) : 0;
+
+  // Multi-select participants (Agnes: e.g. Tina + Agnes both go)
+  const kidChips = [`<span class="chip small addev-kid ${selKids.length === 0 ? "selected" : ""}" data-kid="">${t("famOpt")}</span>`]
+    .concat(state.kids.map(k =>
+      `<span class="chip small addev-kid ${selKids.includes(k.id) ? "selected" : ""}" data-kid="${k.id}">${esc(k.name)}</span>`)).join(" ");
+
+  // Always include this event's own duration so one chip is guaranteed selected
+  const durLabel = d => d < 60 ? `${d}m` : (d % 60 ? `${Math.floor(d / 60)}h${pad(d % 60)}` : `${d / 60}h`);
+  const durOpts = [...new Set([30, 45, 60, 90, 120, durVal])].sort((a, b) => a - b);
+  const durChip = d => `<span class="chip small addev-dur ${durVal === d ? "selected" : ""}" data-d="${d}">${durLabel(d)}</span>`;
+  const bufChip = b => `<span class="chip small addev-buf ${bufVal === b ? "selected" : ""}" data-b="${b}">${b === 0 ? t("none") : b + "m"}</span>`;
+  const remChip = r => `<span class="chip small addev-rem ${remindVal === r ? "selected" : ""}" data-r="${r}">${r === 0 ? t("none") : (r === -1 ? t("atStart") : r + "m")}</span>`;
+
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeDialog()">
+      <div class="dialog">
+        <h2>${_aeEditId ? t("editAct") : t("newAct")}</h2>
+        <label>${t("actTitle")}</label>
+        <input type="text" id="ae-title" placeholder="${t("actTitlePh")}" value="${editing ? esc(editing.title) : ""}">
+        <label>${t("whoFor")}</label>
+        <div class="chip-row" id="ae-kids">${kidChips}</div>
+        <label>${t("dateL")}</label>
+        <div class="month-head">
+          <button class="icon-btn" onclick="aeShiftDate(-1)">‹</button>
+          <span class="mh-title" id="ae-date-label" style="font-size:14px"></span>
+          <button class="icon-btn" onclick="aeShiftDate(1)">›</button>
+        </div>
+        <input type="date" id="ae-date" class="field-input" title="${t("pickDate2")}"
+               onchange="if(this.value){window._aeDate=this.value;aeDateLabel();aeConflicts()}">
+        <label>${t("startsAt")} <span id="ae-hour-label"></span></label>
+        <input type="range" id="ae-hour" min="360" max="1290" step="5" value="${startVal}" oninput="aeHourLabel();aeConflicts()">
+        <input type="time" id="ae-time" class="field-input" title="${t("typeTime")}" style="margin-top:6px"
+               onchange="aeTimeTyped(this.value)">
+        <label>${t("durationL")}</label>
+        <div class="chip-row" id="ae-dur">${durOpts.map(durChip).join("")}</div>
+        <label>${t("bufferL")}</label>
+        <div class="chip-row" id="ae-buf">${[0,10,15,30].map(bufChip).join("")}</div>
+        <label>${t("locationL")}</label>
+        <input type="text" id="ae-loc" placeholder="${t("locPh")}" value="${editing && editing.location ? esc(editing.location) : ""}">
+        <label>${t("notesL")}</label>
+        <input type="text" id="ae-notes" placeholder="${t("notesPh")}" value="${editing && editing.notes ? esc(editing.notes) : ""}">
+        <label>${t("remindL")}</label>
+        <div class="chip-row" id="ae-rem">${[0,-1,15,30,60].map(remChip).join("")}</div>
+        <div id="ae-conflicts"></div>
+        <div class="dialog-actions">
+          <button class="btn btn-outlined" onclick="closeDialog()">${t("cancelBtn")}</button>
+          <button class="btn btn-filled" onclick="confirmAddEvent()">${_aeEditId ? t("saveBtn") : t("addBtn")}</button>
+        </div>
+      </div>
+    </div>`;
+  window._aeDate = editing ? editing.date : (presetDate || activeDate);
+  aeDateLabel(); aeHourLabel();
+  // Preserve exact start time even if outside the slider's range
+  window._aeStart = startVal;
+  document.getElementById("ae-hour-label").textContent = fmtTime(startVal);
+  const tiInit = document.getElementById("ae-time");
+  if (tiInit) tiInit.value = `${pad(Math.floor(startVal / 60))}:${pad(startVal % 60)}`;
+  // Participants: multi-select; "Family" clears individual picks
+  document.querySelectorAll(".addev-kid").forEach(el => el.onclick = () => {
+    if (!el.dataset.kid) {
+      document.querySelectorAll(".addev-kid").forEach(x => x.classList.remove("selected"));
+      el.classList.add("selected");
+    } else {
+      el.classList.toggle("selected");
+      const famChip = document.querySelector('.addev-kid[data-kid=""]');
+      const anySel = [...document.querySelectorAll(".addev-kid")].some(x => x.dataset.kid && x.classList.contains("selected"));
+      famChip.classList.toggle("selected", !anySel);
+    }
+    aeConflicts();
+  });
+  document.querySelectorAll(".addev-dur").forEach(el => el.onclick = () => { selectChip(el, "addev-dur"); aeConflicts(); });
+  document.querySelectorAll(".addev-buf").forEach(el => el.onclick = () => { selectChip(el, "addev-buf"); aeConflicts(); });
+  document.querySelectorAll(".addev-rem").forEach(el => el.onclick = () => selectChip(el, "addev-rem"));
+  aeConflicts();
+}
+function selectChip(el, cls) {
+  document.querySelectorAll("." + cls).forEach(x => x.classList.remove("selected"));
+  el.classList.add("selected");
+}
+function aeShiftDate(n) { window._aeDate = addDays(window._aeDate, n); aeDateLabel(); aeConflicts(); }
+function aeDateLabel() {
+  const el = document.getElementById("ae-date-label");
+  if (el) el.textContent = displayDateL(window._aeDate);
+  const di = document.getElementById("ae-date");
+  if (di) di.value = window._aeDate;
+}
+function aeHourLabel() {
+  const mins = +document.getElementById("ae-hour").value;
+  window._aeStart = mins;
+  document.getElementById("ae-hour-label").textContent = fmtTime(mins);
+  const ti = document.getElementById("ae-time");
+  if (ti) ti.value = `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
+}
+// Typed time (Agnes: let me enter the exact time — any time, not just slider range)
+function aeTimeTyped(v) {
+  const m = String(v).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return;
+  const mins = (+m[1]) * 60 + (+m[2]);
+  window._aeStart = mins;
+  const slider = document.getElementById("ae-hour");
+  slider.value = Math.min(Math.max(mins, +slider.min), +slider.max);
+  document.getElementById("ae-hour-label").textContent = fmtTime(mins);
+  aeConflicts();
+}
+function aeReadForm() {
+  const pids = [...document.querySelectorAll(".addev-kid.selected")]
+    .map(el => el.dataset.kid).filter(Boolean).map(Number);
+  return {
+    title: document.getElementById("ae-title").value.trim(),
+    participants: pids,
+    kidId: pids[0] != null ? pids[0] : null,
+    date: window._aeDate,
+    start: window._aeStart != null ? window._aeStart : +document.getElementById("ae-hour").value,
+    dur: (() => { const el = document.querySelector(".addev-dur.selected"); return el ? +el.dataset.d : 60; })(),
+    buffer: (() => { const el = document.querySelector(".addev-buf.selected"); return el ? +el.dataset.b : 0; })(),
+    location: document.getElementById("ae-loc").value.trim(),
+    notes: document.getElementById("ae-notes").value.trim(),
+    remind: (() => { const el = document.querySelector(".addev-rem.selected"); return el ? +el.dataset.r : 0; })()
+  };
+}
+// Live conflict preview inside the dialog (Ocean: warn BEFORE adding)
+function aeConflicts() {
+  const box = document.getElementById("ae-conflicts");
+  if (!box) return;
+  const f = aeReadForm();
+  const kidsToCheck = f.participants.length ? f.participants : [null];
+  const all = new Set();
+  for (const kid of kidsToCheck) {
+    checkConflicts(
+      { date: f.date, start: f.start, end: f.start + f.dur, buffer: f.buffer, kidId: kid },
+      _aeEditId
+    ).forEach(c => all.add(c));
+  }
+  const conflicts = [...all];
+  box.innerHTML = conflicts.length
+    ? `<div class="dlg-conflicts bad">⚠️ ${t("conflictsHead")}<br>${conflicts.map(esc).join("<br>")}</div>`
+    : `<div class="dlg-conflicts ok">${t("noConflict")}</div>`;
+}
+function confirmAddEvent() {
+  const f = aeReadForm();
+  if (!f.title) { toast(lang() === "zh" ? "俾個活動名先" : "Give the activity a title"); return; }
+  if (_aeEditId) {
+    const ev = state.events.find(e => e.id === _aeEditId);
+    if (ev) {
+      Object.assign(ev, {
+        title: f.title, kidId: f.kidId, participants: f.participants, date: f.date,
+        start: f.start, end: f.start + f.dur, buffer: f.buffer,
+        location: f.location || null, notes: f.notes || "", remind: f.remind
+      });
+    }
+    closeDialog();
+    toast(lang() === "zh" ? `已更新「${f.title}」✓` : `"${f.title}" updated ✓`);
+  } else {
+    const ev = { id: state.nextEventId++, title: f.title, kidId: f.kidId, participants: f.participants,
+      date: f.date, start: f.start, end: f.start + f.dur, buffer: f.buffer, recurring: false,
+      notes: f.notes || "", location: f.location || null, remind: f.remind };
+    state.events.push(ev);
+    activeDate = ev.date;
+    closeDialog();
+    toast(lang() === "zh" ? `已加入「${f.title}」✓` : `"${f.title}" added ✓`);
+  }
+  _aeEditId = null;
+  render();
+}
+
+let _akEditId = null;
+function openAddKid(editId) {
+  _akEditId = editId || null;
+  const editing = _akEditId ? state.kids.find(k => k.id === _akEditId) : null;
+  const colors = ["#E64A19","#1976D2","#388E3C","#7B1FA2","#F9A825","#C2185B","#00796B","#455A64"];
+  const selColor = editing ? editing.color : colors[0];
+  const selRole = editing ? (editing.role || "kid") : "kid";
+  const noLim = editing && editing.limit >= 999;
+  const limVal = editing && !noLim ? editing.limit : 2;
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeDialog()">
+      <div class="dialog">
+        <h2>${_akEditId ? t("editMember") : t("addKidTitle")}</h2>
+        <label>${t("nameL")}</label>
+        <input type="text" id="ak-name" placeholder="${t("namePh")}" value="${editing ? esc(editing.name) : ""}">
+        <label>${t("roleL")}</label>
+        <div class="chip-row" id="ak-role">
+          <span class="chip small ak-role ${selRole === "kid" ? "selected" : ""}" data-role="kid">${t("roleKid")}</span>
+          <span class="chip small ak-role ${selRole === "parent" ? "selected" : ""}" data-role="parent">${t("roleParent")}</span>
+          <span class="chip small ak-role ${selRole === "helper" ? "selected" : ""}" data-role="helper">${t("roleHelper")}</span>
+        </div>
+        <div class="sub" style="font-size:11px;color:var(--faint);margin-top:6px" id="ak-role-note"></div>
+        <label>${t("colorL")}</label>
+        <div class="swatches" id="ak-colors">
+          ${colors.map(c => `<div class="swatch ${c === selColor ? "selected" : ""}" style="background:${c}" data-c="${c}"></div>`).join("")}
+        </div>
+        <label>${t("dailyLimitL")}: <span id="ak-lim-label">${noLim ? "∞" : limVal}</span></label>
+        <input type="range" id="ak-lim" min="1" max="10" value="${limVal}" step="1"
+               oninput="document.getElementById('ak-lim-label').textContent=this.value;document.getElementById('ak-nolimit').classList.remove('selected')">
+        <div class="chip-row" style="margin-top:8px">
+          <span class="chip small ${noLim ? "selected" : ""}" id="ak-nolimit"
+                onclick="this.classList.toggle('selected');document.getElementById('ak-lim-label').textContent=this.classList.contains('selected')?'∞':document.getElementById('ak-lim').value">∞ ${t("noLimit")}</span>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-outlined" onclick="closeDialog()">${t("cancelBtn")}</button>
+          <button class="btn btn-filled" onclick="confirmAddKid()">${_akEditId ? t("saveBtn") : t("addBtn")}</button>
+        </div>
+      </div>
+    </div>`;
+  document.querySelectorAll(".swatch").forEach(el => el.onclick = () => {
+    document.querySelectorAll(".swatch").forEach(x => x.classList.remove("selected"));
+    el.classList.add("selected");
+  });
+  document.querySelectorAll(".ak-role").forEach(el => el.onclick = () => {
+    selectChip(el, "ak-role");
+    document.getElementById("ak-role-note").textContent = el.dataset.role === "helper" ? t("helperNote") : "";
+  });
+}
+function confirmAddKid() {
+  const name = document.getElementById("ak-name").value.trim();
+  if (!name) { toast(lang() === "zh" ? "入返個名先" : "Enter a name"); return; }
+  const color = document.querySelector(".swatch.selected").dataset.c;
+  const role = document.querySelector(".ak-role.selected").dataset.role;
+  const noLimit = document.getElementById("ak-nolimit").classList.contains("selected");
+  const limit = noLimit ? 999 : +document.getElementById("ak-lim").value;
+  if (_akEditId) {
+    const k = state.kids.find(x => x.id === _akEditId);
+    if (k) Object.assign(k, { name, color, role, limit });
+    closeDialog();
+    toast(lang() === "zh" ? `已更新 ${name} ✓` : `${name} updated ✓`);
+  } else {
+    state.kids.push({ id: state.nextKidId++, name, color, limit, role });
+    closeDialog();
+    toast(lang() === "zh" ? `${name} 已加入家庭 🎉` : `${name} added to the family 🎉`);
+  }
+  _akEditId = null;
+  render();
+}
+
+// ---------- Snackbar (with optional action button) ----------
+let toastTimer = null;
+let toastAction = null;
+function toast(msg, actionLabel, actionFn) {
+  const el = document.getElementById("snackbar");
+  toastAction = actionFn || null;
+  el.innerHTML = `<span style="flex:1">${esc(msg)}</span>` +
+    (actionLabel ? `<button class="snack-btn" onclick="runToastAction()">${esc(actionLabel)}</button>` : "");
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), actionLabel ? 5000 : 3200);
+}
+function runToastAction() {
+  if (toastAction) toastAction();
+  toastAction = null;
+  document.getElementById("snackbar").classList.remove("show");
+}
+
+// ---------- Generic confirm dialog ----------
+let _confirmFn = null;
+function openConfirm(text, yesLabel, onYes) {
+  _confirmFn = onYes;
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeDialog()">
+      <div class="dialog">
+        <p style="font-size:14.5px;font-weight:600;line-height:1.55">${esc(text)}</p>
+        <div class="dialog-actions">
+          <button class="btn btn-outlined" onclick="closeDialog()">${t("cancelBtn")}</button>
+          <button class="btn btn-filled" onclick="closeDialog();if(window._cf){const f=window._cf;window._cf=null;f()}" id="confirm-yes">${esc(yesLabel)}</button>
+        </div>
+      </div>
+    </div>`;
+  window._cf = onYes;
+}
+
+// ---------- Trash / restore ----------
+function restoreEvent(trashId) {
+  const idx = state.trash.findIndex(x => x.trashId === trashId);
+  if (idx < 0) return;
+  const item = state.trash.splice(idx, 1)[0];
+  state.events.push(item.data);
+  toast(t("restoredMsg"));
+  render();
+}
+// Restore then open the edit dialog (Ocean: edit items in the bin)
+function editFromTrash(trashId) {
+  const idx = state.trash.findIndex(x => x.trashId === trashId);
+  if (idx < 0) return;
+  const item = state.trash.splice(idx, 1)[0];
+  state.events.push(item.data);
+  render();
+  openAddEvent(item.data.id);
+}
+
+// ---------- First-run tutorial ----------
+function openTour(step) {
+  const steps = [
+    { emoji: "👋", title: t("tour1T"), body: t("tour1B") },
+    { emoji: "✨", title: t("tour2T"), body: t("tour2B") },
+    { emoji: "🧠", title: t("tour3T"), body: t("tour3B") }
+  ];
+  const s = steps[step];
+  const last = step === steps.length - 1;
+  document.getElementById("dialog-root").innerHTML = `
+    <div class="overlay">
+      <div class="dialog" style="text-align:center"
+           ontouchstart="window._tourX=event.touches[0].clientX"
+           ontouchend="tourSwipe(event, ${step})">
+        <div class="tour-emoji">${s.emoji}</div>
+        <h2 style="text-align:center">${esc(s.title)}</h2>
+        <p style="font-size:13.5px;color:var(--muted);font-weight:500;line-height:1.6">${esc(s.body)}</p>
+        <div class="tour-dots">${steps.map((_, i) => `<span class="${i === step ? "on" : ""}"></span>`).join("")}</div>
+        <div class="dialog-actions" style="justify-content:space-between">
+          <button class="btn btn-outlined" onclick="endTour()">${t("tourSkip")}</button>
+          <button class="btn btn-filled" onclick="${last ? "endTour()" : `openTour(${step + 1})`}">${last ? t("tourDone") : t("tourNext")}</button>
+        </div>
+      </div>
+    </div>`;
+}
+// Swipe left/right through tour steps (Ocean)
+function tourSwipe(ev, step) {
+  if (window._tourX == null) return;
+  const dx = ev.changedTouches[0].clientX - window._tourX;
+  window._tourX = null;
+  if (dx < -40) { if (step < 2) openTour(step + 1); else endTour(); }
+  else if (dx > 40 && step > 0) openTour(step - 1);
+}
+function endTour() {
+  state.settings.seenTour = true;
+  save();
+  closeDialog();
+}
+
+render();
+if (!state.settings.seenTour) setTimeout(() => openTour(0), 600);
+</script>
+</body>
+</html>
